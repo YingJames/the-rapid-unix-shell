@@ -1,3 +1,6 @@
+# Miscellaneous
+/.vscode
+
 # Prerequisites
 *.d
 
@@ -29,6 +32,7 @@
 *.dylib
 
 # Executables
+rush
 *.exe
 *.out
 *.app
