@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "exec_command.h"
+#include "builtin_commands.h"
 
 #define MAX_LINE 256 /* The maximum length command */
 
@@ -14,11 +16,20 @@ int main() {
 
 void runShell() {
     char cmdInput[MAX_LINE];
-    char **args;
+    char **argv;
+
+    int pathc = 0;
+    char **pathv = path(0, NULL);
     while (strcmp(cmdInput, "exit") != 0) {
+        
         printf("rush> ");
         fgets(cmdInput, sizeof cmdInput, stdin);
-        args = parseCmd(cmdInput);
+        argv = parseCmd(cmdInput);
+        int argc = sizeof (argv) / sizeof (argv[0]);
+
+        execCommand(pathc, pathv, argc, argv);
+
+
     }
 }
 

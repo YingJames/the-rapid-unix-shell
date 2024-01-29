@@ -2,7 +2,7 @@ CC = gcc
 CFLAGS = -Wall -Wextra -ggdb -O0 -std=c99
 
 TARGET = rush
-SRCS = main.c
+SRCS = main.c builtin_commands.c exec_command.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(TARGET)
