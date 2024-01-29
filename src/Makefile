@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -ggdb -std=c99
+CFLAGS = -Wall -Wextra -ggdb -O0 -std=c99
 
 TARGET = rush
 SRCS = main.c
