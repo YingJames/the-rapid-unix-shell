@@ -1,18 +1,29 @@
 #ifndef __BUILTIN_COMMANDS_H__
 #define __BUILTIN_COMMANDS_H__
-// #include <stdio.h>
 
 /**
- * @brief Executes the "path" command.
+ * @brief Sets the path for the shell.
  *
- * This function is responsible for handling the "path" built-in command in the shell.
- * It takes the number of arguments and an array of argument strings as parameters.
- * The "path" command is used to display or modify the search path for executable files.
- * If the number of arguments is 0, then only built-in commands can be executed
- * 
- * @param argc The number of arguments or number of paths.
- * @param argv An array of argument strings or path values.
+ * This function is responsible for setting the path for the shell.
+ * It modifies the path count and the path array using the number of arguments
+ * and the argument array as parameters.
+ *
+ * @param pathc Pointer to the path count variable. This will be modified to reflect the new path count.
+ * @param pathv Array of paths. This will be modified to reflect the new paths.
+ * @param argc Number of arguments.
+ * @param argv Array of arguments.
  */
-char** path(int argc, char **argv);
+void pathCmd(int *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char argv[MAX_ARGS][MAX_LINE]);
+
+/**
+ * @brief Exits the shell.
+ *
+ * This function is responsible for exiting the shell.
+ * It exits the shell if there is only one argument.
+ * Otherwise, it prints an error message.
+ *
+ * @param argc Number of arguments.
+ */
+void exitCmd(int argc);
 
 #endif
