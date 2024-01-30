@@ -2,13 +2,16 @@
 #define EXEC_COMMAND_H
 
 /**
- * Executes the given commands.
- *
- * @param pathc The number of paths in the pathv array.
- * @param pathv An array of paths to search for executables.
- * @param argc The number of arguments in the argv array.
- * @param argv An array of command-line arguments.
- */
-void execCommand(int pathc, char **pathv, int argc, char **argv);
+ * @brief Executes a command
+ * 
+ * This function is responsible for executing a built-in command or one from the path.
+ * It uses the path count and the path array to find where the commands are located.
+ * 
+ * @param pathc Number of paths in pathv
+ * @param pathv Array of paths
+ * @param argc Number of arguments
+ * @param argv Array of arguments
+*/
+void execCommand(int *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char argv[MAX_ARGS][MAX_LINE]);
 
 #endif
