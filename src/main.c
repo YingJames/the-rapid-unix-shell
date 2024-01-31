@@ -7,7 +7,7 @@
 #include "exec_command.h"
 
 void runShell();
-void parseCmd(int *argc, char cmdInput[MAX_LINE], char argv[MAX_ARGS][MAX_LINE]);
+void parseCmd(size_t *argc, char cmdInput[MAX_LINE], char argv[MAX_ARGS][MAX_LINE]);
 
 int main() {
     runShell();
@@ -15,39 +15,41 @@ int main() {
 }
 
 void runShell() {
+    char *string = NULL;
     char cmdInput[MAX_LINE];
     char argv[MAX_ARGS][MAX_LINE];
-    int argc;
+    size_t argc = 0;
+    // ssize_t read;
 
-    int pathc = 0;
+    size_t pathc = 0;
     char pathv[MAX_PATHS][MAX_LINE];
     while (1) {
         printf("rush> ");
         fflush(stdout);
 
-        // read input and then parse it to get arguments
-        fgets(cmdInput, sizeof cmdInput, stdin);
+        getline(&string, &argc, stdin);
+        strcpy(cmdInput, string);
         parseCmd(&argc, cmdInput, argv);
 
         // execute the appropriate command
         execCommand(&pathc, pathv, argc, argv);
+
+        // debug path
+        // for (size_t i = 0; i < pathc; i++) 
+        //     printf("%s\n", pathv[i]);
     }
 }
 
-void parseCmd(int *argc, char cmdInput[MAX_LINE], char argv[MAX_ARGS][MAX_LINE]) {
+void parseCmd(size_t *argc, char cmdInput[MAX_LINE], char argv[MAX_ARGS][MAX_LINE]) {
     // replace trailing newline with null
     cmdInput[strcspn(cmdInput, "\n")] = '\0';
     char delimiter[] = " \t";
-    char *tokenPtr;
-    char *savePtr;
-    int i = 0;
+    char *output = NULL;
 
-    tokenPtr = strtok_r(cmdInput, delimiter, &savePtr);
-    while (tokenPtr != NULL) {
-        strcpy(argv[i], tokenPtr);
-        tokenPtr = strtok_r(NULL, delimiter, &savePtr);
+    size_t i = 0;
+    while ((output = strsep(&cmdInput, delimiter)) != NULL) {  
+        strcpy(argv[i], output);
         i++;
-    }
-    strcpy(argv[i], "\0");
+    }  
     *argc = i;
 }
