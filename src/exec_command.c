@@ -19,9 +19,7 @@ void execCommand(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char 
     }
 
     else {
-        char error_message[30] = "An error has occurred\n";
-        write(STDERR_FILENO, error_message, strlen(error_message)); 
-        fflush(stdout);
+        handleError();
     }
 
 }
