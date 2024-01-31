@@ -8,6 +8,7 @@
 
 void runShell();
 void parseCmd(size_t *argc, char cmdInput[MAX_LINE], char argv[MAX_ARGS][MAX_LINE]);
+void rtrim(char *str);
 
 int main() {
     runShell();
@@ -24,7 +25,7 @@ void runShell() {
     size_t pathc = 1;
     char pathv[MAX_PATHS][MAX_LINE];
     strcpy(pathv[0], "/bin");
-    
+
     while (1) {
         printf("rush> ");
         fflush(stdout);
@@ -45,6 +46,7 @@ void runShell() {
 void parseCmd(size_t *argc, char cmdInput[MAX_LINE], char argv[MAX_ARGS][MAX_LINE]) {
     // replace trailing newline with null
     cmdInput[strcspn(cmdInput, "\n")] = '\0';
+    rtrim(cmdInput);
     char delimiter[] = " \t";
     char *output = NULL;
 
@@ -54,4 +56,12 @@ void parseCmd(size_t *argc, char cmdInput[MAX_LINE], char argv[MAX_ARGS][MAX_LIN
         i++;
     }  
     *argc = i;
+}
+
+void rtrim(char *str) {
+    int len = strlen(str);
+    while (len > 0 && (str[len - 1] == ' ' || str[len - 1] == '\t')) {
+        len--;
+    }
+    str[len] = '\0';
 }
