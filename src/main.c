@@ -23,6 +23,8 @@ void runShell() {
 
     size_t pathc = 0;
     char pathv[MAX_PATHS][MAX_LINE];
+    strcpy(pathv[0], "/bin");
+    
     while (1) {
         printf("rush> ");
         fflush(stdout);
