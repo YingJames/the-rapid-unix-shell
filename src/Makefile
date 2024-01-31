@@ -1,5 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -ggdb -O0 -std=c99
+OPT = -O0
+CFLAGS = -Wall -Wextra -std=c99 -g $(OPT)
 
 TARGET = rush
 SRCS = main.c constants.c exec_command.c builtin_commands.c
