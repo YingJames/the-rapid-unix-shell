@@ -21,7 +21,7 @@ void runShell() {
     size_t argc = 0;
     // ssize_t read;
 
-    size_t pathc = 0;
+    size_t pathc = 1;
     char pathv[MAX_PATHS][MAX_LINE];
     strcpy(pathv[0], "/bin");
     
