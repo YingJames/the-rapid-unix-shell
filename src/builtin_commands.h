@@ -2,6 +2,17 @@
 #define __BUILTIN_COMMANDS_H__
 
 /**
+ * @brief Exits the shell.
+ *
+ * This function is responsible for exiting the shell.
+ * It exits the shell if there is only one argument.
+ * Otherwise, it prints an error message.
+ *
+ * @param argc Number of arguments.
+ */
+void exitCmd(size_t argc);
+
+/**
  * @brief Sets the path for the shell.
  *
  * This function is responsible for setting the path for the shell.
@@ -16,14 +27,15 @@
 void pathCmd(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], size_t argc, char argv[MAX_ARGS][MAX_LINE]);
 
 /**
- * @brief Exits the shell.
- *
- * This function is responsible for exiting the shell.
- * It exits the shell if there is only one argument.
- * Otherwise, it prints an error message.
- *
+ * @brief Changes the current working directory.
+ * 
+ * This function is responsible for changing the current working directory.
+ * It changes the current working directory to the directory specified in the argument.
+ * If there are 0 or >1 arguments, it will signal an error.
+ * 
  * @param argc Number of arguments.
- */
-void exitCmd(size_t argc);
+ * @param argv Array of arguments.
+*/
+void cdCmd(size_t argc, char argv[MAX_ARGS][MAX_LINE]);
 
 #endif

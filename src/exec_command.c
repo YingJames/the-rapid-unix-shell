@@ -14,6 +14,10 @@ void execCommand(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char 
         pathCmd(pathc, pathv, argc, argv);
     }
 
+    else if (strcmp(argv[0], "cd") == 0) {
+        cdCmd(argc, argv);
+    }
+
     else {
         char error_message[30] = "An error has occurred\n";
         write(STDERR_FILENO, error_message, strlen(error_message)); 
