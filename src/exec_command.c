@@ -4,7 +4,7 @@
 #include "builtin_commands.h"
 #include "exec_command.h"
 
-void execCommand(int *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char argv[MAX_ARGS][MAX_LINE]) {
+void execCommand(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char argv[MAX_ARGS][MAX_LINE]) {
     if (argc == 0) {
         return;
     }

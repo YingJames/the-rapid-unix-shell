@@ -5,18 +5,18 @@
 #include "constants.h"
 #include "builtin_commands.h"
 
-void pathCmd(int *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char argv[MAX_ARGS][MAX_LINE]) {
+void pathCmd(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], size_t argc, char argv[MAX_ARGS][MAX_LINE]) {
     if (argc == 0) {
         *pathc = 0;
     } else {
         *pathc = argc - 1;
-        for (int i = 1; i < argc; i++) {
+        for (size_t i = 1; i < argc; i++) {
             strcpy(pathv[i-1], argv[i]);
         }
     }
 }
 
-void exitCmd(int argc) {
+void exitCmd(size_t argc) {
     if (argc == 1) {
         exit(0);
     } else {

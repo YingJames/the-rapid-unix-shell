@@ -13,7 +13,7 @@
  * @param argc Number of arguments.
  * @param argv Array of arguments.
  */
-void pathCmd(int *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char argv[MAX_ARGS][MAX_LINE]);
+void pathCmd(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], size_t argc, char argv[MAX_ARGS][MAX_LINE]);
 
 /**
  * @brief Exits the shell.
@@ -24,6 +24,6 @@ void pathCmd(int *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char argv[MA
  *
  * @param argc Number of arguments.
  */
-void exitCmd(int argc);
+void exitCmd(size_t argc);
 
 #endif
