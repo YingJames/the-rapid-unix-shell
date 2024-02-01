@@ -7,4 +7,4 @@ extern const size_t MAX_PATHS; /* The maximum number of paths */
 
 void handleError();
 
-#endif // CONSTANTS_H
+#endif 
