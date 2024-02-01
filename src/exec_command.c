@@ -7,7 +7,11 @@
 #include "exec_command.h"
 
 void execCommand(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char argv[MAX_ARGS][MAX_LINE]) {
-    if (strcmp(argv[0], "exit") == 0) {
+    if (strcmp(argv[0], "") == 0) {
+        handleError();
+    }
+
+    else if (strcmp(argv[0], "exit") == 0) {
         exitCmd(argc);
     }
 
@@ -21,11 +25,11 @@ void execCommand(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char 
 
     // commands outside of builtins
     else {
-        execFromPath(pathc, pathv, argc, argv);
+        handlePathCommand(pathc, pathv, argc, argv);
     }
 }
 
-void execFromPath(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char argv[MAX_ARGS][MAX_LINE]) {
+void handlePathCommand(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char argv[MAX_ARGS][MAX_LINE]) {
     char fullPath[MAX_ARGS];
     char *cmd = argv[0]; 
     for (size_t i = 0; i < *pathc; i++) {
