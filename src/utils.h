@@ -6,5 +6,6 @@ extern const size_t MAX_ARGS; /* The maximum number of arguments */
 extern const size_t MAX_PATHS; /* The maximum number of paths */
 
 void handleError();
+int getStrFreq(size_t argc, char argv[MAX_ARGS][MAX_LINE], char* str);
 
 #endif 

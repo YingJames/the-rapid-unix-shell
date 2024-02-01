@@ -13,3 +13,13 @@ void handleError() {
     write(STDERR_FILENO, error_message, strlen(error_message)); 
     fflush(stdout);
 }
+
+int getStrFreq(size_t argc, char argv[MAX_ARGS][MAX_LINE], char* str) {
+    int count = 0;
+    for (size_t i = 0; i < argc; i++) {
+        if (strcmp(argv[i], str) != 0) {
+            count++;
+        }
+    }
+    return count;
+}
