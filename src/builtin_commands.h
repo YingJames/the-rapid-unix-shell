@@ -1,5 +1,5 @@
-#ifndef __BUILTIN_COMMANDS_H__
-#define __BUILTIN_COMMANDS_H__
+#ifndef __UTILS_H__
+#define __UTILS_H__
 
 /**
  * @brief Exits the shell.
