@@ -7,7 +7,7 @@
 #include "exec_command.h"
 
 void runShell();
-void parseCmd(size_t *argc, char cmdInput[MAX_LINE], char argv[MAX_ARGS][MAX_LINE]);
+void cleanupCmd(size_t *argc, char cmdInput[MAX_LINE], char argv[MAX_ARGS][MAX_LINE]);
 void rtrim(char *str);
 
 int main() {
@@ -32,7 +32,7 @@ void runShell() {
 
         getline(&string, &argc, stdin);
         strcpy(cmdInput, string);
-        parseCmd(&argc, cmdInput, argv);
+        cleanupCmd(&argc, cmdInput, argv);
 
         // execute the appropriate command
         execCommand(&pathc, pathv, argc, argv);
@@ -43,7 +43,7 @@ void runShell() {
     }
 }
 
-void parseCmd(size_t *argc, char cmdInput[MAX_LINE], char argv[MAX_ARGS][MAX_LINE]) {
+void cleanupCmd(size_t *argc, char cmdInput[MAX_LINE], char argv[MAX_ARGS][MAX_LINE]) {
     // replace trailing newline with null
     cmdInput[strcspn(cmdInput, "\n")] = '\0';
     rtrim(cmdInput);
