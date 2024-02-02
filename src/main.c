@@ -8,10 +8,10 @@
 
 void runShell();
 void cleanupUserInput(size_t *argc, char userInput[MAX_LINE], char argv[MAX_ARGS][MAX_LINE]);
-void splitCommands(size_t *inputStringsCount, size_t argcList[20], char userInputStrings[MAX_ARGS][MAX_LINE], char allCommands[20][MAX_ARGS][MAX_LINE]);
+void splitCommands(size_t *inputStringsCount, size_t argcList[MAX_COMMANDS], char userInputStrings[MAX_ARGS][MAX_LINE], char allCommands[MAX_COMMANDS][MAX_ARGS][MAX_LINE]);
 void rtrim(char *str);
 
-int main() {
+int main(void) {
     runShell();
     return 0;
 }
@@ -19,14 +19,10 @@ int main() {
 void runShell() {
     char *string = NULL;
     char userInput[MAX_LINE];
-    char allCommands[20][MAX_ARGS][MAX_LINE];
+    char allCommands[MAX_COMMANDS][MAX_ARGS][MAX_LINE];
     char userInputStrings[MAX_ARGS][MAX_LINE];
-    // char argv[MAX_ARGS][MAX_LINE];
     size_t inputStringsCount = 0;
-    // size_t argc = 0;
-    size_t argcList[20];
-    // ssize_t read;
-
+    size_t argcList[MAX_COMMANDS];
 
     size_t pathc = 1;
     char pathv[MAX_PATHS][MAX_LINE];
@@ -46,7 +42,6 @@ void runShell() {
         for (size_t i = 0; i < commandCount; i++) {
             execCommand(&pathc, pathv, argcList[i], allCommands[i]);
         }
-        // execCommand(&pathc, pathv, argc, argv);
 
         // debug path
         // printf("Your input: \n");
