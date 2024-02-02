@@ -56,17 +56,17 @@ void handlePathCommand(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc,
 }
 
 void parseCommand(size_t *argc, char argv[MAX_ARGS][MAX_LINE]) {
-    char *outputFile = NULL;
-    for (size_t i = 0; i < *argc; i++) {
-        if (strcmp(argv[i], ">") == 0) {
-            if (i + 1 < *argc) {
-                outputFile = argv[i + 1];
-                *argc = i;  // Ignore the rest of the command line
-                break;
-            } else {
-                handleError();
-                return;
-            }
-        }
-    }
+    // char *outputFile = NULL;
+    // for (size_t i = 0; i < *argc; i++) {
+    //     if (strcmp(argv[i], ">") == 0) {
+    //         if (i + 1 < *argc) {
+    //             outputFile = argv[i + 1];
+    //             *argc = i;  // Ignore the rest of the command line
+    //             break;
+    //         } else {
+    //             handleError();
+    //             return;
+    //         }
+    //     }
+    // }
 }

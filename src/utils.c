@@ -17,7 +17,7 @@ void handleError() {
 int getStrFreq(size_t argc, char argv[MAX_ARGS][MAX_LINE], char* str) {
     int count = 0;
     for (size_t i = 0; i < argc; i++) {
-        if (strcmp(argv[i], str) != 0) {
+        if (strcmp(argv[i], str) == 0) {
             count++;
         }
     }
