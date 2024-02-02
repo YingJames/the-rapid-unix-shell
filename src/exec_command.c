@@ -7,26 +7,29 @@
 #include "exec_command.h"
 
 void execCommand(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char argv[MAX_ARGS][MAX_LINE]) {
-    if (strcmp(argv[0], "") == 0) {
-        handleError();
+    pid_t pid = fork();
+    if (pid == 0) {
+        // child process
+        if (strcmp(argv[0], "") == 0)
+            handleError();
+        else if (strcmp(argv[0], "exit") == 0)
+            exitCmd(argc);
+        else if (strcmp(argv[0], "path") == 0)
+            pathCmd(pathc, pathv, argc, argv);
+        else if (strcmp(argv[0], "cd") == 0)
+            cdCmd(argc, argv);
+
+        // commands outside of builtins
+        else 
+            handlePathCommand(pathc, pathv, argc, argv); 
+
+    } else {
+        // parent process
+        int status;
+        waitpid(pid, &status, 0);
     }
 
-    else if (strcmp(argv[0], "exit") == 0) {
-        exitCmd(argc);
-    }
 
-    else if (strcmp(argv[0], "path") == 0) {
-        pathCmd(pathc, pathv, argc, argv);
-    }
-
-    else if (strcmp(argv[0], "cd") == 0) {
-        cdCmd(argc, argv);
-    }
-
-    // commands outside of builtins
-    else {
-        handlePathCommand(pathc, pathv, argc, argv);
-    }
 }
 
 void handlePathCommand(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char argv[MAX_ARGS][MAX_LINE]) {
@@ -38,21 +41,13 @@ void handlePathCommand(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc,
         strcat(fullPath, cmd);
         if (access(fullPath, X_OK) == 0) {
             char *argvPointers[MAX_ARGS+1];
+            
+            // create pointers with NULL
             for (int i = 0; i < argc; i++)
                 argvPointers[i] = argv[i];
-
             argvPointers[argc] = NULL;
 
-            pid_t pid = fork();
-            if (pid == 0) {
-                // child process
-                execv(fullPath, argvPointers);
-            } else {
-                // parent process
-                int status;
-                waitpid(pid, &status, 0);
-            }
-
+            execv(fullPath, argvPointers);
         } else {
             handleError();
             break;
