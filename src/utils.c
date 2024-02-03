@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include "utils.h"
 
-const size_t MAX_LINE = 256; /* The maximum length command */
+const size_t MAX_LINE = 255 + 1; /* The maximum length command */
 const size_t MAX_ARGS = 64; /* The maximum number of arguments */
 const size_t MAX_PATHS = 64; /* The maximum number of paths */
 const size_t MAX_COMMANDS = 20; 

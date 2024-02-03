@@ -1,17 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include <sys/types.h>
 
 #include "utils.h"
-#include "builtin_commands.h"
-#include "exec_command.h"
+// #include "builtin_commands.h"
+// #include "exec_command.h"
 
 void runShell();
-void cleanupUserInput(size_t *argc, char userInput[MAX_LINE], char argv[MAX_ARGS][MAX_LINE]);
-void splitCommands(size_t *inputStringsCount, size_t argcList[MAX_COMMANDS], char userInputStrings[MAX_ARGS][MAX_LINE], char allCommands[MAX_COMMANDS][MAX_ARGS][MAX_LINE]);
+void cleanUserInput(char *userInput);
+void splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]);
 void rtrim(char *str);
 
-int main(int argc, char *argv[]) {
+int main(int argc) {
     if (argc > 1) {
         handleError();
         exit(1);
@@ -21,80 +23,80 @@ int main(int argc, char *argv[]) {
 }
 
 void runShell() {
-    char *string = NULL;
-    char userInput[MAX_LINE];
-    char allCommands[MAX_COMMANDS][MAX_ARGS][MAX_LINE];
-    char userInputStrings[MAX_ARGS][MAX_LINE];
-    size_t inputStringsCount = 0;
-    size_t argcList[MAX_COMMANDS];
+    char *userInput = NULL;
+    size_t userInputSize = 0;
+    char cmdDelimiter[] = "&";
+    char argsDelimiter[] = " \t";
 
-    size_t pathc = 1;
-    char pathv[MAX_PATHS][MAX_LINE];
+    // allocate memory for argcList
+    size_t *argcList = calloc(MAX_COMMANDS, sizeof(size_t));
+
+    // allocate memory for command strings
+    char **cmdStrings = malloc(MAX_COMMANDS * sizeof(char*));
+    for (size_t i = 0; i < MAX_COMMANDS; i++) {
+        cmdStrings[i] = calloc(MAX_LINE, sizeof(char));
+    }
+
+    char **cmdArgs = malloc(MAX_ARGS * sizeof(char*));
+    for (size_t i = 0; i < MAX_ARGS; i++) {
+        cmdArgs[i] = calloc(MAX_LINE, sizeof(char));
+    }
+
+    // allocate memory for pathv and default path
+    char **pathv = calloc(MAX_PATHS, sizeof(char*));
+    for (size_t i = 0; i < MAX_PATHS; i++) {
+        pathv[i] = calloc(MAX_LINE, sizeof(char));
+    }
+    pathv[0] = malloc((strlen("/bin") + 1) * sizeof(char));
     strcpy(pathv[0], "/bin");
 
     while (1) {
         printf("rush> ");
         fflush(stdout);
 
-        getline(&string, &inputStringsCount, stdin);
-        fflush(stdin);
-        strcpy(userInput, string);
-        cleanupUserInput(&inputStringsCount, userInput, userInputStrings);
-        splitCommands(&inputStringsCount, argcList, userInputStrings, allCommands);
-        size_t commandCount = (size_t)getStrFreq(inputStringsCount, userInputStrings, "&") + 1;
+        getline(&userInput, &userInputSize, stdin);
+        cleanUserInput(userInput);
+        splitWithDelimiter(userInput, cmdStrings, cmdDelimiter);
 
-        // execute the appropriate command
-        for (size_t i = 0; i < commandCount; i++) {
-            execCommand(&pathc, pathv, argcList[i], allCommands[i]);
+        // debug print cmdStrings
+        for (size_t i = 0; cmdStrings[i] != NULL; i++) {
+            splitWithDelimiter(cmdStrings[i], cmdArgs, argsDelimiter);
+            printf("cmdStrings[%zu]: ", i);
+            for (size_t i = 0; cmdStrings[i] != NULL; i++) {
+                printf("%s ", cmdArgs[i]);
+            }
+            printf("\n");
         }
 
-        // debug path
-        // printf("Your input: \n");
-        // for (size_t i = 0; i < inputStringsCount; i++) {
-        //     printf("%s ", userInputStrings[i]);
-        // }
-        // printf("\n");
+    }
 
-        // printf("Each individual command: \n");
-        // for (size_t commandIndex = 0; commandIndex < commandCount; commandIndex++) {
-        //     for (size_t argIndex = 0; argIndex < argcList[commandIndex]; argIndex++) {
-        //         printf("%s ", allCommands[commandIndex][argIndex]);
-        //     }
-        //     printf("\n");
-        // }
+    for (size_t i = 0; i < MAX_COMMANDS; i++) {
+        free(cmdStrings[i]);
+    }
+    for (size_t i = 0; i < MAX_PATHS; i++) {
+        free(pathv[i]);
     }
 }
 
-void cleanupUserInput(size_t *inputStringsCount, char userInput[MAX_LINE], char userInputStrings[MAX_ARGS][MAX_LINE]) {
+void cleanUserInput( char *userInput) {
     // replace trailing newline with null
     userInput[strcspn(userInput, "\n")] = '\0';
     rtrim(userInput);
-    char delimiter[] = " \t";
-    char *output = NULL;
-
-    size_t i = 0;
-    while ((output = strsep(&userInput, delimiter)) != NULL) {  
-        strcpy(userInputStrings[i], output);
-        i++;
-    }  
-    *inputStringsCount = i;
 }
 
-void splitCommands(size_t *inputStringsCount, size_t argcList[20], char userInputStrings[MAX_ARGS][MAX_LINE], char allCommands[20][MAX_ARGS][MAX_LINE]) {
-    size_t commandIndex = 0;
-    size_t argIndex = 0;
-    for (size_t i = 0; i < *inputStringsCount; i++) {
-        if (strcmp(userInputStrings[i], "&") == 0) {
-            argcList[commandIndex] = argIndex;
-            commandIndex++;
-            argIndex = 0;
-        } else {
-            strcpy(allCommands[commandIndex][argIndex], userInputStrings[i]);
-            argIndex++;
-        }
+// arrayOfStr is modified
+void splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]) {
+    char *token, *tempInput, *str;
+    tempInput = str = strdup(userInput);
+
+    size_t i = 0;
+    while ((token = strsep(&str, delimiter)) != NULL) {
+        arrayOfStr[i] = realloc(arrayOfStr[i], (strlen(token) + 1) * sizeof(char));
+        strcpy(arrayOfStr[i], token);
+        i++;
     }
-    // add the last command count
-    argcList[commandIndex] = argIndex;
+    arrayOfStr[i] = NULL;
+    free(tempInput);
 }
 
 void rtrim(char *str) {
