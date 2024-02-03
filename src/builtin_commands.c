@@ -20,11 +20,11 @@ void pathCmd(char **pathv, char **argv) {
         pathv[1] = NULL;
     } else {
         size_t argIndex = 0;
-        for (size_t argIndex = 1; argv[argIndex] != NULL; argIndex++) {
-            pathv[argIndex] = realloc(pathv[argIndex], (strlen(argv[argIndex]) + 1) * sizeof(char));
-            strcpy(pathv[argIndex], argv[argIndex]);
+        for (argIndex = 1; argv[argIndex] != NULL; argIndex++) {
+            pathv[argIndex-1] = realloc(pathv[argIndex-1], (strlen(argv[argIndex]) + 1) * sizeof(char));
+            strcpy(pathv[argIndex-1], argv[argIndex]);
         }
-        pathv[argIndex] = NULL;
+        pathv[argIndex-1] = NULL;
     }
 }
 
