@@ -24,7 +24,7 @@ void exitCmd(size_t argc);
  * @param argc Number of arguments.
  * @param argv Array of arguments.
  */
-void pathCmd(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], size_t argc, char argv[MAX_ARGS][MAX_LINE]);
+void pathCmd(char **pathv, char **argv);
 
 /**
  * @brief Changes the current working directory.

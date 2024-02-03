@@ -5,8 +5,8 @@
 #include <sys/types.h>
 
 #include "utils.h"
-// #include "builtin_commands.h"
-// #include "exec_command.h"
+#include "builtin_commands.h"
+#include "exec_command.h"
 
 void runShell();
 void cleanUserInput(char *userInput);
@@ -29,7 +29,7 @@ void runShell() {
     char argsDelimiter[] = " \t";
 
     // allocate memory for argcList
-    size_t *argcList = calloc(MAX_COMMANDS, sizeof(size_t));
+    // size_t *argcList = calloc(MAX_COMMANDS, sizeof(size_t));
 
     // allocate memory for command strings
     char **cmdStrings = malloc(MAX_COMMANDS * sizeof(char*));
@@ -50,7 +50,11 @@ void runShell() {
     pathv[0] = malloc((strlen("/bin") + 1) * sizeof(char));
     strcpy(pathv[0], "/bin");
 
-    while (1) {
+    // run flag
+    int run = 1;
+    int *runp = &run;
+
+    while (run == 1) {
         printf("rush> ");
         fflush(stdout);
 
@@ -58,24 +62,36 @@ void runShell() {
         cleanUserInput(userInput);
         splitWithDelimiter(userInput, cmdStrings, cmdDelimiter);
 
-        // debug print cmdStrings
         for (size_t i = 0; cmdStrings[i] != NULL; i++) {
             splitWithDelimiter(cmdStrings[i], cmdArgs, argsDelimiter);
-            printf("cmdStrings[%zu]: ", i);
-            for (size_t i = 0; cmdStrings[i] != NULL; i++) {
-                printf("%s ", cmdArgs[i]);
+            execCommand(pathv, cmdArgs, runp);
+
+            // debug print pathv
+            printf("pathv: ");
+            for (size_t i = 0; pathv[i] != NULL; i++) {
+                printf("%s ", pathv[i]);
             }
             printf("\n");
-        }
 
+            // debug print cmdStrings
+            // printf("cmdStrings[%zu]: ", i);
+            // for (size_t i = 0; cmdStrings[i] != NULL; i++) {
+            //     printf("%s ", cmdArgs[i]);
+            // }
+            // printf("\n");
+        }
     }
 
     for (size_t i = 0; i < MAX_COMMANDS; i++) {
         free(cmdStrings[i]);
     }
+    for (size_t i = 0; i < MAX_ARGS; i++) {
+        free(cmdArgs[i]);
+    }
     for (size_t i = 0; i < MAX_PATHS; i++) {
         free(pathv[i]);
     }
+    exit(0);
 }
 
 void cleanUserInput( char *userInput) {
