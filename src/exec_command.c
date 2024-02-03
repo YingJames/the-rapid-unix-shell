@@ -10,9 +10,7 @@ void execCommand(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char 
     pid_t pid = fork();
     if (pid == 0) {
         // child process
-        if (strcmp(argv[0], "") == 0)
-            handleError();
-        else if (strcmp(argv[0], "exit") == 0)
+        if (strcmp(argv[0], "exit") == 0)
             exitCmd(argc);
         else if (strcmp(argv[0], "path") == 0)
             pathCmd(pathc, pathv, argc, argv);

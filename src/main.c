@@ -11,8 +11,12 @@ void cleanupUserInput(size_t *argc, char userInput[MAX_LINE], char argv[MAX_ARGS
 void splitCommands(size_t *inputStringsCount, size_t argcList[MAX_COMMANDS], char userInputStrings[MAX_ARGS][MAX_LINE], char allCommands[MAX_COMMANDS][MAX_ARGS][MAX_LINE]);
 void rtrim(char *str);
 
-int main(void) {
-    runShell();
+int main(int argc, char *argv[]) {
+    if (argc > 1) {
+        handleError();
+        exit(1);
+    }
+        runShell();
     return 0;
 }
 
@@ -33,6 +37,7 @@ void runShell() {
         fflush(stdout);
 
         getline(&string, &inputStringsCount, stdin);
+        fflush(stdin);
         strcpy(userInput, string);
         cleanupUserInput(&inputStringsCount, userInput, userInputStrings);
         splitCommands(&inputStringsCount, argcList, userInputStrings, allCommands);
