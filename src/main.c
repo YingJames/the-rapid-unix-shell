@@ -122,6 +122,7 @@ void splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]) {
     size_t i = 0;
     while ((token = strsep(&str, delimiter)) != NULL) {
         char *ltrimmedToken = ltrim(token);
+        rtrim(ltrimmedToken);
         arrayOfStr[i] = realloc(arrayOfStr[i], (strlen(ltrimmedToken) + 1) * sizeof(char));
 
         strcpy(arrayOfStr[i], ltrimmedToken);
