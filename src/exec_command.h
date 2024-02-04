@@ -12,8 +12,8 @@
  * @param argc Number of arguments
  * @param argv Array of arguments
 */
-void execCommand(char **pathv, char **argv, int *runp);
-// void handlePathCommand(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char argv[MAX_ARGS][MAX_LINE]);
+void execCommand(char **pathv, char **argv);
+void handlePathCommand(char **pathv, char **argv);
 // void parseCommand(size_t *argc, char argv[MAX_ARGS][MAX_LINE]);
 
 #endif

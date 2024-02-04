@@ -3,6 +3,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include "utils.h"
 #include "builtin_commands.h"
@@ -12,6 +14,7 @@ void runShell();
 void cleanUserInput(char *userInput);
 void splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]);
 void rtrim(char *str);
+char *ltrim(char *str);
 
 int main(int argc) {
     if (argc > 1) {
@@ -37,10 +40,6 @@ void runShell() {
         cmdStrings[i] = calloc(MAX_LINE, sizeof(char));
     }
 
-    char **cmdArgs = malloc(MAX_ARGS * sizeof(char*));
-    for (size_t i = 0; i < MAX_ARGS; i++) {
-        cmdArgs[i] = calloc(MAX_LINE, sizeof(char));
-    }
 
     // allocate memory for pathv and default path
     char **pathv = calloc(MAX_PATHS, sizeof(char*));
@@ -50,11 +49,7 @@ void runShell() {
     pathv[0] = malloc((strlen("/bin") + 1) * sizeof(char));
     strcpy(pathv[0], "/bin");
 
-    // run flag
-    int run = 1;
-    int *runp = &run;
-
-    while (run == 1) {
+    while (1) {
         printf("rush> ");
         fflush(stdout);
 
@@ -63,20 +58,42 @@ void runShell() {
         splitWithDelimiter(userInput, cmdStrings, cmdDelimiter);
 
         for (size_t i = 0; cmdStrings[i] != NULL; i++) {
+            char **cmdArgs = malloc(MAX_ARGS * sizeof(char*));
+            for (size_t i = 0; i < MAX_ARGS; i++) {
+                cmdArgs[i] = calloc(MAX_LINE, sizeof(char));
+            }
             splitWithDelimiter(cmdStrings[i], cmdArgs, argsDelimiter);
-            execCommand(pathv, cmdArgs, runp);
+            if (strcmp(cmdArgs[0], "exit") == 0) {
+                exit(0);
+            } else if (strcmp(cmdArgs[0], "") == 0) {
+                continue;
+            }
+
+            pid_t pid = fork();
+            if (pid == 0) {
+                // child process
+                execCommand(pathv, cmdArgs);
+            } else {
+                // parent process
+                int status;
+                waitpid(pid, &status, 0);
+            }
+
+            for (size_t i = 0; i < MAX_ARGS; i++) {
+                free(cmdArgs[i]);
+            }
 
             // debug print pathv
-            printf("pathv: ");
-            for (size_t i = 0; pathv[i] != NULL; i++) {
-                printf("%s ", pathv[i]);
-            }
-            printf("\n");
+            // printf("pathv: ");
+            // for (size_t i = 0; pathv[i] != NULL; i++) {
+            //     printf("%s ", pathv[i]);
+            // }
+            // printf("\n");
 
             // debug print cmdStrings
             // printf("cmdStrings[%zu]: ", i);
-            // for (size_t i = 0; cmdStrings[i] != NULL; i++) {
-            //     printf("%s ", cmdArgs[i]);
+            // for (size_t j = 0; cmdArgs[j] != NULL; j++) {
+            //     printf("%s ", cmdArgs[j]);
             // }
             // printf("\n");
         }
@@ -85,18 +102,15 @@ void runShell() {
     for (size_t i = 0; i < MAX_COMMANDS; i++) {
         free(cmdStrings[i]);
     }
-    for (size_t i = 0; i < MAX_ARGS; i++) {
-        free(cmdArgs[i]);
-    }
     for (size_t i = 0; i < MAX_PATHS; i++) {
         free(pathv[i]);
     }
-    exit(0);
 }
 
 void cleanUserInput( char *userInput) {
     // replace trailing newline with null
     userInput[strcspn(userInput, "\n")] = '\0';
+    ltrim(userInput);
     rtrim(userInput);
 }
 
@@ -107,12 +121,32 @@ void splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]) {
 
     size_t i = 0;
     while ((token = strsep(&str, delimiter)) != NULL) {
-        arrayOfStr[i] = realloc(arrayOfStr[i], (strlen(token) + 1) * sizeof(char));
-        strcpy(arrayOfStr[i], token);
+        char *ltrimmedToken = ltrim(token);
+        arrayOfStr[i] = realloc(arrayOfStr[i], (strlen(ltrimmedToken) + 1) * sizeof(char));
+
+        strcpy(arrayOfStr[i], ltrimmedToken);
+        free(ltrimmedToken);
         i++;
     }
     arrayOfStr[i] = NULL;
     free(tempInput);
+}
+
+char* ltrim(char *str) {
+    size_t len = strlen(str);
+    size_t start = 0;
+
+    while (start < len && (str[start] == ' ' || str[start] == '\t')) {
+        start++;
+    }
+
+    size_t newLen = len - start;
+
+    char* result = (char*)malloc((newLen + 1) * sizeof(char));
+
+    strncpy(result, str + start, newLen);
+    result[newLen] = '\0';
+    return result;
 }
 
 void rtrim(char *str) {

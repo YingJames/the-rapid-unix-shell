@@ -5,16 +5,7 @@
 #include "utils.h"
 #include "builtin_commands.h"
 
-void pathCmd(char **pathv, char **argv) {
-    // find argc
-    size_t argc = 0;
-    for (size_t i = 0; i < MAX_ARGS; i++) {
-        if (argv[i] == NULL) {
-            argc = i;
-            break;
-        }
-    }
-
+void pathCmd(char **pathv, size_t argc, char **argv) {
     if (argc == 1) {
         pathv[0] = realloc(pathv[0], (strlen("/bin") + 1) * sizeof(char));
         pathv[1] = NULL;
@@ -28,7 +19,7 @@ void pathCmd(char **pathv, char **argv) {
     }
 }
 
-void cdCmd(size_t argc, char argv[MAX_ARGS][MAX_LINE]) {
+void cdCmd(size_t argc, char **argv) {
     if (argc == 2) {
         if (chdir(argv[1]) != 0) {
             handleError();

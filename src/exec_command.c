@@ -1,61 +1,54 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
 #include "utils.h"
 #include "builtin_commands.h"
 #include "exec_command.h"
 
-void execCommand(char **pathv, char **argv, int *runp) {
-    if (strcmp(argv[0], "exit") == 0) {
-        *runp = -1;
-        return;
+void execCommand(char **pathv, char **argv) {
+    size_t argc = 0;
+    for (size_t i = 0; i < MAX_ARGS; i++) {
+        if (argv[i] == NULL) {
+            argc = i;
+            break;
+        }
+    }
+    if (strcmp(argv[0], "path") == 0) {
+        pathCmd(pathv, argc, argv);
+        exit(0);
+    }
+    else if (strcmp(argv[0], "cd") == 0) {
+        cdCmd(argc, argv);
+        exit(0);
     }
 
-    // pid_t pid = fork();
-    // if (pid == 0) {
-        // child process
-        if (strcmp(argv[0], "path") == 0)
-            pathCmd(pathv, argv);
-        // else if (strcmp(argv[0], "cd") == 0)
-        //     cdCmd(argc, argv);
-
-        // commands outside of builtins
-        // else 
-            // handlePathCommand(pathc, pathv, argc, argv); 
-
-    // } else {
-        // parent process
-        // int status;
-        // waitpid(pid, &status, 0);
-    // }
-
-
+    // commands outside of builtins
+    else 
+        handlePathCommand(pathv, argv); 
 }
-/*
-void handlePathCommand(size_t *pathc, char pathv[MAX_PATHS][MAX_LINE], int argc, char argv[MAX_ARGS][MAX_LINE]) {
-    char fullPath[MAX_ARGS];
+
+void handlePathCommand(char **pathv, char **argv) {
+    char *fullPath = calloc(MAX_LINE, sizeof(char));
     char *cmd = argv[0]; 
-    for (size_t i = 0; i < *pathc; i++) {
+
+    for (size_t i = 0; pathv[i] != NULL; i++) {
         strcpy(fullPath, pathv[i]);
         strcat(fullPath, "/");
         strcat(fullPath, cmd);
         if (access(fullPath, X_OK) == 0) {
-            char *argvPointers[MAX_ARGS+1];
-            
-            // create pointers with NULL
-            for (int i = 0; i < argc; i++)
-                argvPointers[i] = argv[i];
-            argvPointers[argc] = NULL;
-
-            execv(fullPath, argvPointers);
+            execv(fullPath, argv);
         } else {
             handleError();
             break;
         }
     }
+
+    free(fullPath);
 }
 
+/*
 void parseCommand(size_t *argc, char argv[MAX_ARGS][MAX_LINE]) {
     char *outputFile = NULL;
     for (size_t i = 0; i < *argc; i++) {
