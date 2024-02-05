@@ -7,8 +7,8 @@
 
 void pathCmd(char **pathv, size_t argc, char **argv) {
     if (argc == 1) {
-        pathv[0] = realloc(pathv[0], (strlen("/bin") + 1) * sizeof(char));
-        pathv[1] = NULL;
+        free(pathv[0]);
+        pathv[0] = NULL;
     } else {
         size_t argIndex = 0;
         for (argIndex = 1; argv[argIndex] != NULL; argIndex++) {

@@ -5,6 +5,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 #include "utils.h"
 #include "builtin_commands.h"
@@ -13,8 +15,9 @@
 void runShell();
 void cleanUserInput(char *userInput);
 void splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]);
+void splitForRedirection(char *input, char *outputFile);
 void rtrim(char *str);
-char *ltrim(char *str);
+void ltrim(char *str);
 
 int main(int argc) {
     if (argc > 1) {
@@ -58,31 +61,65 @@ void runShell() {
         splitWithDelimiter(userInput, cmdStrings, cmdDelimiter);
 
         for (size_t i = 0; cmdStrings[i] != NULL; i++) {
+
+            // check for redirection
+            size_t size = 0;
+            char *outputFile = calloc(MAX_LINE, sizeof(char));
+            size = getStrFreq(cmdStrings[i], ">");
+            if (size == 1) {
+                splitForRedirection(cmdStrings[i], outputFile);
+            }
+            else if (size > 1) {
+                handleError();
+                continue;
+            }
+
+            // allocate mem for cmdArgs
             char **cmdArgs = malloc(MAX_ARGS * sizeof(char*));
             for (size_t i = 0; i < MAX_ARGS; i++) {
                 cmdArgs[i] = calloc(MAX_LINE, sizeof(char));
             }
+
+            // get the cmd args array
             splitWithDelimiter(cmdStrings[i], cmdArgs, argsDelimiter);
-            if (strcmp(cmdArgs[0], "exit") == 0) {
+
+            // get argc value
+            size_t argc = 0;
+            for (size_t i = 0; i < MAX_ARGS; i++) {
+                if (cmdArgs[i] == NULL) {
+                    argc = i;
+                    break;
+                }
+            }
+            if (argc != 1 && strcmp(cmdArgs[0], "exit") == 0) {
+                handleError();
+            } else if (strcmp(cmdArgs[0], "exit") == 0) {
                 exit(0);
             } else if (strcmp(cmdArgs[0], "") == 0) {
                 continue;
-            }
-
-            pid_t pid = fork();
-            if (pid == 0) {
-                // child process
-                execCommand(pathv, cmdArgs);
+            } else if (strcmp(cmdArgs[0], "path") == 0) {
+                pathCmd(pathv, argc, cmdArgs);
+            } else if (strcmp(cmdArgs[0], "cd") == 0) {
+                cdCmd(argc, cmdArgs);
             } else {
-                // parent process
-                int status;
-                waitpid(pid, &status, 0);
-            }
+                pid_t pid = fork();
+                if (pid == 0) {
+                    // child process
+                    if (strlen(outputFile) > 0) {
+                        close(STDOUT_FILENO);
+                        open(outputFile, O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
+                    }
+                    execCommand(pathv, cmdArgs);
+                } else {
+                    // parent process
+                    int status;
+                    waitpid(pid, &status, 0);
+                }
 
-            for (size_t i = 0; i < MAX_ARGS; i++) {
-                free(cmdArgs[i]);
+                for (size_t i = 0; i < MAX_ARGS; i++) {
+                    free(cmdArgs[i]);
+                }
             }
-
             // debug print pathv
             // printf("pathv: ");
             // for (size_t i = 0; pathv[i] != NULL; i++) {
@@ -96,7 +133,10 @@ void runShell() {
             //     printf("%s ", cmdArgs[j]);
             // }
             // printf("\n");
+
+            free(outputFile);
         }
+
     }
 
     for (size_t i = 0; i < MAX_COMMANDS; i++) {
@@ -121,33 +161,70 @@ void splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]) {
 
     size_t i = 0;
     while ((token = strsep(&str, delimiter)) != NULL) {
-        char *ltrimmedToken = ltrim(token);
-        rtrim(ltrimmedToken);
-        arrayOfStr[i] = realloc(arrayOfStr[i], (strlen(ltrimmedToken) + 1) * sizeof(char));
+        ltrim(token);
+        rtrim(token);
+        arrayOfStr[i] = realloc(arrayOfStr[i], (strlen(token) + 1) * sizeof(char));
 
-        strcpy(arrayOfStr[i], ltrimmedToken);
-        free(ltrimmedToken);
+        strcpy(arrayOfStr[i], token);
+        // free(token);
         i++;
     }
     arrayOfStr[i] = NULL;
     free(tempInput);
 }
 
-char* ltrim(char *str) {
-    size_t len = strlen(str);
-    size_t start = 0;
+void splitForRedirection(char *input, char *outputFile) {
+    char *token, *tempInput, *str;
+    tempInput = str = strdup(input);
 
-    while (start < len && (str[start] == ' ' || str[start] == '\t')) {
-        start++;
+    size_t i = 0;
+    while ((token = strsep(&str, ">")) != NULL) {
+        ltrim(token);
+        rtrim(token);
+
+        if (i == 0) {
+            strcpy(input, token);
+        } else if (i == 1) {
+            strcpy(outputFile, token);
+        }
+        i++;
+    }
+    free(tempInput);
+}
+
+// char* ltrim(char *str) {
+//     size_t len = strlen(str);
+//     size_t start = 0;
+
+//     while (start < len && (str[start] == ' ' || str[start] == '\t')) {
+//         start++;
+//     }
+
+//     size_t newLen = len - start;
+
+//     char* result = (char*)malloc((newLen + 1) * sizeof(char));
+
+//     strncpy(result, str + start, newLen);
+//     result[newLen] = '\0';
+//     return result;
+// }
+void ltrim(char *str) {
+
+    size_t len = strlen(str);
+    size_t i = 0;
+
+    while (str[i] == ' ' || str[i] == '\t') {
+        i++;
     }
 
-    size_t newLen = len - start;
+    if (i > 0) {
+        size_t j = 0;
+        while (i < len) {
+            str[j++] = str[i++];
+        }
+        str[j] = '\0'; 
+    }
 
-    char* result = (char*)malloc((newLen + 1) * sizeof(char));
-
-    strncpy(result, str + start, newLen);
-    result[newLen] = '\0';
-    return result;
 }
 
 void rtrim(char *str) {

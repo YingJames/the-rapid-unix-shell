@@ -15,12 +15,12 @@ void handleError() {
     fflush(stdout);
 }
 
-int getStrFreq(size_t argc, char argv[MAX_ARGS][MAX_LINE], char* str) {
+size_t getStrFreq(char *input, char* targetStr) {
     int count = 0;
-    for (size_t i = 0; i < argc; i++) {
-        if (strcmp(argv[i], str) == 0) {
-            count++;
-        }
+    char *tmp = input;
+    while((tmp = strstr(tmp, targetStr)) != NULL) {
+        count++;
+        tmp++;
     }
     return count;
 }
