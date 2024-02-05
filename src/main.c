@@ -60,18 +60,28 @@ void runShell() {
         cleanUserInput(userInput);
         splitWithDelimiter(userInput, cmdStrings, cmdDelimiter);
 
+        size_t cmdCount = 0;
         for (size_t i = 0; cmdStrings[i] != NULL; i++) {
+            cmdCount++;
+        }
+        pid_t pids[cmdCount];
 
+        for (size_t i = 0; cmdStrings[i] != NULL; i++) {
             // check for redirection
-            size_t size = 0;
+            size_t redirectCount = 0;
             char *outputFile = calloc(MAX_LINE, sizeof(char));
-            size = getStrFreq(cmdStrings[i], ">");
-            if (size == 1) {
-                splitForRedirection(cmdStrings[i], outputFile);
-            }
-            else if (size > 1) {
+            redirectCount = getStrFreq(cmdStrings[i], ">");
+            splitForRedirection(cmdStrings[i], outputFile);
+            if (redirectCount > 1) {
                 handleError();
                 continue;
+            } else {
+                for (int i = 0; outputFile[i]; i++) {
+                    if (isspace((unsigned char)outputFile[i])) {
+                        handleError();
+                        break;
+                    }
+                }
             }
 
             // allocate mem for cmdArgs
@@ -112,12 +122,18 @@ void runShell() {
                     execCommand(pathv, cmdArgs);
                 } else {
                     // parent process
-                    int status;
-                    waitpid(pid, &status, 0);
+                    pids[i] = pid;
                 }
 
                 for (size_t i = 0; i < MAX_ARGS; i++) {
                     free(cmdArgs[i]);
+                }
+            }
+
+            int status;
+            for (size_t i = 0; i < cmdCount; i++) {
+                if (pids[i] != 0) {
+                    waitpid(pids[i], &status, 0);
                 }
             }
             // debug print pathv
@@ -136,6 +152,7 @@ void runShell() {
 
             free(outputFile);
         }
+        
 
     }
 
