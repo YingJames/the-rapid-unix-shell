@@ -64,6 +64,19 @@ void runShell() {
         for (size_t i = 0; cmdStrings[i] != NULL; i++) {
             cmdCount++;
         }
+        // int isValid = 1;
+        // if (cmdCount > 1) {
+        //     for (size_t i = 0; i < cmdCount; i++) {
+        //         if (strlen(cmdStrings[i]) == 0) {
+        //             handleError();
+        //             isValid = 0;
+        //             break;
+        //         }
+        //     }
+        // }
+        // if (!isValid) {
+        //     continue;
+        // }
         pid_t pids[cmdCount];
 
         for (size_t i = 0; cmdStrings[i] != NULL; i++) {
@@ -72,7 +85,9 @@ void runShell() {
             char *outputFile = calloc(MAX_LINE, sizeof(char));
             redirectCount = getStrFreq(cmdStrings[i], ">");
             splitForRedirection(cmdStrings[i], outputFile);
-            if (redirectCount > 1) {
+            size_t commandStrLen = strlen(cmdStrings[i]);
+            size_t outputFileStrLen = strlen(outputFile);
+            if (redirectCount > 1 || (commandStrLen == 0 || outputFileStrLen == 0)) {
                 handleError();
                 continue;
             } else {
