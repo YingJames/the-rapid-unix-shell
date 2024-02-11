@@ -3,7 +3,7 @@ OPT = -O0
 CFLAGS = -Wall -Wextra -g $(OPT)
 
 TARGET = rush
-SRCS = main.c utils.c builtin_commands.c exec_command.c
+SRCS = main.c clean_string.c utils.c builtin_commands.c exec_command.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(TARGET)

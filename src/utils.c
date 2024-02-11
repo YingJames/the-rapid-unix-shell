@@ -2,12 +2,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <stddef.h>
-#include "utils.h"
+#include "include/utils.h"
 
-const size_t MAX_LINE = 255 + 1; /* The maximum length command */
-const size_t MAX_ARGS = 64; /* The maximum number of arguments */
-const size_t MAX_PATHS = 64; /* The maximum number of paths */
-const size_t MAX_COMMANDS = 20; 
+const int MAX_LINE = 255 + 1; /* The maximum length command */
+const int MAX_ARGS = 64; /* The maximum number of arguments */
+const int MAX_PATHS = 64; /* The maximum number of paths */
+const int MAX_COMMANDS = 20;
 
 void handleError() {
     char error_message[30] = "An error has occurred\n";

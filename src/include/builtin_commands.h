@@ -1,6 +1,5 @@
-#ifndef __UTILS_H__
-#define __UTILS_H__
-
+#ifndef UTILS_H_
+#define UTILS_H_
 /**
  * @brief Exits the shell.
  *
