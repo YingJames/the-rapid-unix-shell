@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include <unistd.h>
 #include "include/utils.h"
 #include "include/clean_string.h"
 
@@ -29,7 +30,7 @@ int strArrLen(char **arr) {
 }
 
 int handleCmds(char **cmdLines, char **pathv) {
-    char **cmdLine = calloc(MAX_COMMANDS, sizeof(char *));
+    char **cmdLine = calloc(3, sizeof(char *));
     cmdLine[0] = calloc(MAX_LINE, sizeof(char));
     cmdLine[1] = calloc(MAX_LINE, sizeof(char));
     cmdLine[2] = NULL;
@@ -39,7 +40,7 @@ int handleCmds(char **cmdLines, char **pathv) {
     for (int j = 0; j < MAX_ARGS; j++) {
         args[j] = calloc(MAX_LINE, sizeof(char));
     }
-    for (int i = 0; cmdLines[i] != NULL; i++) {
+    for (int i = 0; strcmp(cmdLines[i], "\0") != 0; i++) {
         // split by redirection if any
         int validRedirect = splitString(cmdLine, cmdLines[i], ">");
         if (validRedirect == -1) return -1;
@@ -51,7 +52,7 @@ int handleCmds(char **cmdLines, char **pathv) {
     }
 
     // free memory
-    for (int i = 0; i < MAX_COMMANDS; i++)
+    for (int i = 0; i < 3; i++)
         free(cmdLine[i]);
     for (int i = 0; i < MAX_ARGS; i++)
         free(args[i]);
@@ -85,6 +86,7 @@ int runShell() {
         fflush(stdout);
 
         getline(&lineInput, &lineInputSize, stdin);
+        fflush(stdin);
 
         // remove newline character and leading/trailing whitespace
         lineInput[strcspn(lineInput, "\n")] = '\0';

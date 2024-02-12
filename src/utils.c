@@ -39,6 +39,7 @@ int splitString(char **arrayOfStr, char *userInput, char delimiter[]) {
         size_t len = strlen(token);
 
         if (len == 0) {
+            free(tempInput);
             handleError();
             return -1;
         }
@@ -47,7 +48,8 @@ int splitString(char **arrayOfStr, char *userInput, char delimiter[]) {
 
         i++;
     }
-    arrayOfStr[i] = NULL;
+//    arrayOfStr[i] = NULL;
+    memset(arrayOfStr[i], '\0', MAX_LINE);
     free(tempInput);
     return 0;
 }
