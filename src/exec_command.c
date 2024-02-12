@@ -26,14 +26,13 @@ void execCommand(char **pathv, char **argv) {
 
     // commands outside of builtins
      else
-        handlePathCommand(pathv, argv); 
+         handlePathCommand(pathv, argv, 0);
 }
 
-void handlePathCommand(char **pathv, char **argv) {
+void handlePathCommand(char **pathv, char **argv, pid_t pid) {
     char *fullPath = calloc(MAX_LINE, sizeof(char));
     char *cmd = argv[0]; 
     int pathc = strArrLen(pathv);
-    pid_t pid = 0;
     int commandFound =  0; // Flag to track if the command was found
 
 
@@ -44,13 +43,11 @@ void handlePathCommand(char **pathv, char **argv) {
         strcat(fullPath, "\0");
         if (access(fullPath, X_OK) == 0) {
             commandFound = 1;
-            pid = fork();
             if (pid == 0) {
                 if (execv(fullPath, argv) == -1)
                     handleError();
             }
         }
-        waitpid(pid, NULL, 0);
         memset(fullPath, 0, strlen(fullPath));
     }
     // if the command is not found in any of the paths

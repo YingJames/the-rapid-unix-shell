@@ -13,7 +13,7 @@
  * @param argv Array of arguments
 */
 void execCommand(char **pathv, char **argv);
-void handlePathCommand(char **pathv, char **argv);
+void handlePathCommand(char **pathv, char **argv, pid_t pid);
 // void parseCommand(size_t *argc, char argv[MAX_ARGS][MAX_LINE]);
 
 #endif

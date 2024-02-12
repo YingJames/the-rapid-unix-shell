@@ -27,6 +27,8 @@ int main(int argc, char **argv) {
 
 
 int handleCmds(char **cmdLines, char **pathv) {
+    pid_t pid, wpid;
+    int status = 0;
     char **cmdLine = calloc(3, sizeof(char *));
     cmdLine[0] = calloc(MAX_LINE, sizeof(char));
     cmdLine[1] = calloc(MAX_LINE, sizeof(char));
@@ -61,9 +63,11 @@ int handleCmds(char **cmdLines, char **pathv) {
             exitCmd(argc);
             continue;
         } else {
-            handlePathCommand(pathv, argv);
+            pid = fork();
+            handlePathCommand(pathv, argv, pid);
         }
     }
+    while ((wpid = wait(&status)) > 0);
 
     // free memory
     for (int i = 0; i < 3; i++)
