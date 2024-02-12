@@ -2,7 +2,9 @@
 #include <string.h>
 #include <unistd.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include "include/utils.h"
+#include "include/clean_string.h"
 
 const int MAX_LINE = 255 + 1; /* The maximum length command */
 const int MAX_ARGS = 64; /* The maximum number of arguments */
@@ -23,4 +25,29 @@ size_t getStrFreq(char *input, char* targetStr) {
         tmp++;
     }
     return count;
+}
+
+int splitString(char **arrayOfStr, char *userInput, char delimiter[]) {
+    char *token, *tempInput, *str;
+    tempInput = str = strdup(userInput);
+
+    size_t i = 0;
+    while ((token = strsep(&str, delimiter)) != NULL) {
+        trim(token);
+
+        // allocate memory
+        size_t len = strlen(token);
+
+        if (len == 0) {
+            handleError();
+            return -1;
+        }
+        strcpy(arrayOfStr[i], token);
+        arrayOfStr[i][len] = '\0';
+
+        i++;
+    }
+    arrayOfStr[i] = NULL;
+    free(tempInput);
+    return 0;
 }

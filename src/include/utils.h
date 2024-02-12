@@ -8,5 +8,6 @@ extern const int MAX_COMMANDS; /* The maximum number of commands */
 
 void handleError();
 size_t getStrFreq(char *input, char* targetStr);
+int splitString(char **arrayOfStr, char *userInput, char delimiter[]);
 
 #endif 
