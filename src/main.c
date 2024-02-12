@@ -23,11 +23,6 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-int strArrLen(char **arr) {
-    int i = 0;
-    while (arr[i] != NULL) i++;
-    return i;
-}
 
 int handleCmds(char **cmdLines, char **pathv) {
     char **cmdLine = calloc(3, sizeof(char *));

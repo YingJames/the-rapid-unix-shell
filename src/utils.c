@@ -45,11 +45,16 @@ int splitString(char **arrayOfStr, char *userInput, char delimiter[]) {
         }
         strcpy(arrayOfStr[i], token);
         arrayOfStr[i][len] = '\0';
-
         i++;
     }
-//    arrayOfStr[i] = NULL;
-    memset(arrayOfStr[i], '\0', MAX_LINE);
+    arrayOfStr[i] = NULL;
+//    memset(arrayOfStr[i], 0, strlen(arrayOfStr[i]));
     free(tempInput);
     return 0;
+}
+
+int strArrLen(char **arr) {
+    int i = 0;
+    while (arr[i] != NULL) i++;
+    return i;
 }
