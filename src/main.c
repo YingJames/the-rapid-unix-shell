@@ -42,5 +42,22 @@ void runShell() {
         fflush(stdout);
 
         getline(&lineInput, &lineInputSize, stdin);
+
+        // remove newline character and leading/trailing whitespace
+        lineInput[strcspn(lineInput, "\n")] = '\0';
+        trim(lineInput);
+
+        // check for exit command
+        if (strcmp(lineInput, "exit") == 0) break;
+        // check for empty input
+        else if (strlen(lineInput) == 0) continue;
+
+        // split input into cmdLines for parallel commands
+        int validMultiCmd = splitString(cmdLines, lineInput, cmdDelimiter);
+        if (validMultiCmd == -1) continue;
+
+//        int cmdLinesLen = strArrLen(cmdLines);
+        int validCmd = handleCmds(cmdLines, pathv);
+        if (validCmd == -1) continue;
     }
 }
