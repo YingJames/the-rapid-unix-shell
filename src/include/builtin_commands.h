@@ -9,7 +9,7 @@
  *
  * @param argc Number of arguments.
  */
-void exitCmd(size_t argc);
+void exitCmd(int argc);
 
 /**
  * @brief Sets the path for the shell.
@@ -23,7 +23,7 @@ void exitCmd(size_t argc);
  * @param argc Number of arguments.
  * @param argv Array of arguments.
  */
-void pathCmd(char **pathv, size_t argc, char **argv);
+void pathCmd(char **pathv, int argc, char **argv);
 
 /**
  * @brief Changes the current working directory.
@@ -35,6 +35,6 @@ void pathCmd(char **pathv, size_t argc, char **argv);
  * @param argc Number of arguments.
  * @param argv Array of arguments.
 */
-void cdCmd(size_t argc, char **argv);
+void cdCmd(int argc, char **argv);
 
 #endif
