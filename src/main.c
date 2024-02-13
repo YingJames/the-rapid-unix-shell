@@ -15,7 +15,7 @@
 void runShell();
 void cleanUserInput(char *userInput);
 void splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]);
-void splitForRedirection(char *input, char *outputFile);
+int splitForRedirection(char *input, char *outputFile);
 
 int main(int argc) {
     if (argc > 1) {
@@ -57,6 +57,9 @@ void runShell() {
         }
 
         cleanUserInput(userInput);
+        if (strlen(userInput) == 0) {
+            continue;
+        }
         splitWithDelimiter(userInput, cmdStrings, cmdDelimiter);
 
         size_t cmdCount = 0;
@@ -70,8 +73,13 @@ void runShell() {
             size_t redirectCount = 0;
             char *outputFile = calloc(MAX_LINE, sizeof(char));
             redirectCount = getStrFreq(cmdStrings[i], ">");
-            splitForRedirection(cmdStrings[i], outputFile);
-            if (redirectCount > 1) {
+            int isValidCmd = splitForRedirection(cmdStrings[i], outputFile);
+            if (isValidCmd == -1) {
+                // check for empty or invalid redirection
+                handleError();
+                continue;
+            } else if (redirectCount > 1) {
+                // check for multiple redirection
                 handleError();
                 continue;
             } else {
@@ -147,7 +155,7 @@ void runShell() {
 void cleanUserInput( char *userInput) {
     // replace trailing newline with null
     userInput[strcspn(userInput, "\n")] = '\0';
-    rtrim(userInput);
+    trim(userInput);
 }
 
 // arrayOfStr is modified
@@ -168,21 +176,27 @@ void splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]) {
     free(tempInput);
 }
 
-void splitForRedirection(char *input, char *outputFile) {
+int splitForRedirection(char *input, char *outputFile) {
     char *token, *tempInput, *str;
     tempInput = str = strdup(input);
 
     size_t i = 0;
     while ((token = strsep(&str, ">")) != NULL) {
         trim(token);
+        if (strlen(token) == 0) {
+            return -1;
+        }
 
         if (i == 0) {
             strcpy(input, token);
+            strcat(input, "\0");
         } else if (i == 1) {
             strcpy(outputFile, token);
+            strcat(outputFile, "\0");
         }
         i++;
     }
 
     free(tempInput);
+    return 0;
 }
