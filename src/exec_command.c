@@ -40,12 +40,14 @@ void handlePathCommand(char **pathv, char **argv) {
         if (access(fullPath, X_OK) == 0) {
             if (execv(fullPath, argv) == -1) {
                 handleError();
+                exit(1);
             }
         }
     }
     // if the command is not found in any of the paths
     handleError();
     free(fullPath);
+    exit(1);
 
 }
 
