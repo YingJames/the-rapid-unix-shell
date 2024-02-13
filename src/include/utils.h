@@ -8,5 +8,8 @@ extern const size_t MAX_COMMANDS; /* The maximum number of commands */
 
 void handleError();
 size_t getStrFreq(char *input, char* targetStr);
+void ltrim(char *str);
+void rtrim(char *str);
+void trim(char *str);
 
 #endif 

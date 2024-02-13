@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include "utils.h"
-#include "builtin_commands.h"
-#include "exec_command.h"
+#include "include/utils.h"
+#include "include/builtin_commands.h"
+#include "include/exec_command.h"
 
 void execCommand(char **pathv, char **argv) {
     // size_t argc = 0;
