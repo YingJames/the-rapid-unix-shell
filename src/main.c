@@ -27,6 +27,8 @@ int main(int argc) {
 }
 
 void runShell() {
+    pid_t wpid;
+    int status = 0;
     char *userInput = NULL;
     size_t userInputSize = 0;
     char cmdDelimiter[] = "&";
@@ -121,7 +123,9 @@ void runShell() {
                 cdCmd(argc, cmdArgs);
             } else {
                 pid_t pid = fork();
-                if (pid == 0) {
+                if (pid < 0) {
+                    handleError();
+                } else if (pid == 0) {
                     // child process
                     if (strlen(outputFile) > 0) {
                         close(STDOUT_FILENO);
@@ -130,18 +134,14 @@ void runShell() {
                     execCommand(pathv, cmdArgs);
                 } else {
                     // parent process
-                    while (wait(NULL) > 0);
+                    while ((wpid = wait(&status)) > 0);
                 }
-
                 for (size_t i = 0; i < MAX_ARGS; i++) {
                     free(cmdArgs[i]);
                 }
             }
-
             free(outputFile);
         }
-        
-
     }
 
     for (size_t i = 0; i < MAX_COMMANDS; i++) {
@@ -166,6 +166,9 @@ void splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]) {
     size_t i = 0;
     while ((token = strsep(&str, delimiter)) != NULL) {
         trim(token);
+        if (strlen(token) == 0) {
+            continue;
+        }
         arrayOfStr[i] = realloc(arrayOfStr[i], (strlen(token) + 1) * sizeof(char));
 
         strcpy(arrayOfStr[i], token);
