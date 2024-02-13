@@ -3,6 +3,10 @@
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <ctype.h>
+
 #include "include/utils.h"
 #include "include/clean_string.h"
 #include "include/builtin_commands.h"
@@ -25,6 +29,15 @@ int main(int argc, char **argv) {
     return 0;
 }
 
+int hasWhiteSpace(char *str) {
+    for (size_t i = 0; i < strlen(str); i++) {
+        if (isspace(str[i])) {
+            handleError();
+            return -1;
+        }
+    }
+    return 0;
+}
 
 int handleCmds(char **cmdLines, char **pathv) {
     pid_t pid, wpid;
@@ -41,15 +54,33 @@ int handleCmds(char **cmdLines, char **pathv) {
     }
 
     // iterate through all commands
+    int isValidCmd = 0;
     for (int i = 0; cmdLines[i] != NULL; i++) {
-        // split by redirection if any
-        int validRedirect = splitString(cmdLine, cmdLines[i], ">");
-        if (validRedirect == -1) return -1;
+
+        // split for redirection if necessary
+        isValidCmd = splitString(cmdLine, cmdLines[i], ">");
+        if (isValidCmd == -1) break;
         char *cmd = cmdLine[0];
         char *outputFile = cmdLine[1];
 
-        int validArgs = splitString(argv, cmd, " \t");
-        if (validArgs == -1) continue;
+
+        // check for multiple redirections in one command
+        if (getStrFreq(cmdLines[i], ">") > 1) {
+            handleError();
+            isValidCmd = -1;
+            break;
+        }
+
+
+        // check for valid output file name
+        isValidCmd = hasWhiteSpace(outputFile);
+        if (isValidCmd == -1) break;
+
+
+        // split to get argv
+        isValidCmd = splitString(argv, cmd, " \t");
+        if (isValidCmd == -1) break;
+
 
         int argc = strArrLen(argv);
         // check for built-in commands
@@ -64,9 +95,17 @@ int handleCmds(char **cmdLines, char **pathv) {
             continue;
         } else {
             pid = fork();
-            handlePathCommand(pathv, argv, pid);
+            // redirection
+            if (pid == 0) {
+                if (outputFile != NULL) {
+                    close(STDOUT_FILENO);
+                    open(outputFile, O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
+                }
+                handlePathCommand(pathv, argv, pid);
+            }
         }
     }
+    // wait for all children to finish
     while ((wpid = wait(&status)) > 0);
 
     // free memory
@@ -76,6 +115,8 @@ int handleCmds(char **cmdLines, char **pathv) {
         free(argv[i]);
     free(cmdLine);
     free(argv);
+    if (isValidCmd == -1) return -1;
+
     return 0;
 }
 
@@ -100,6 +141,7 @@ int runShell() {
         for (int i = 0; i < MAX_COMMANDS; i++) {
             cmdLines[i] = calloc(MAX_LINE, sizeof(char));
         }
+        int isValidCmd = 0;
 
         printf("rush> ");
         fflush(stdout);
@@ -115,12 +157,22 @@ int runShell() {
         if (strlen(lineInput) == 0) continue;
 
         // split input into cmdLines for parallel commands
-        int validMultiCmd = splitString(cmdLines, lineInput, cmdDelimiter);
-        if (validMultiCmd == -1) continue;
+        isValidCmd = splitString(cmdLines, lineInput, cmdDelimiter);
+        if (isValidCmd == -1) {
+            for (int i = 0; i < MAX_COMMANDS; i++)
+                free(cmdLines[i]);
+            free(cmdLines);
+            continue;
+        }
 
 //        int cmdLinesLen = strArrLen(cmdLines);
-        int validCmd = handleCmds(cmdLines, pathv);
-        if (validCmd == -1) continue;
+        isValidCmd = handleCmds(cmdLines, pathv);
+        if (isValidCmd == -1) {
+            for (int i = 0; i < MAX_COMMANDS; i++)
+                free(cmdLines[i]);
+            free(cmdLines);
+            continue;
+        }
 
         // free memory
         for (int i = 0; i < MAX_COMMANDS; i++)
