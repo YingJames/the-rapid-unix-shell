@@ -3,13 +3,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/wait.h>
-#include "include/utils.h"
-#include "include/builtin_commands.h"
-#include "include/exec_command.h"
+#include "utils.h"
+#include "builtin_commands.h"
+#include "exec_command.h"
 
 void execCommand(char **pathv, char **argv) {
      size_t argc = 0;
-     for (size_t i = 0; i < MAX_ARGS; i++) {
+     for (int i = 0; i < MAX_ARGS; i++) {
          if (argv[i] == NULL) {
              argc = i;
              break;

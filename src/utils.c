@@ -3,8 +3,8 @@
 #include <unistd.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include "include/utils.h"
-#include "include/clean_string.h"
+#include "utils.h"
+#include "clean_string.h"
 
 const int MAX_LINE = 255 + 1; /* The maximum length command */
 const int MAX_ARGS = 64; /* The maximum number of arguments */

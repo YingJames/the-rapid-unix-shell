@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "include/utils.h"
-#include "include/builtin_commands.h"
+#include "utils.h"
+#include "builtin_commands.h"
 
 void pathCmd(char **pathv, int argc, char **argv) {
     if (argc == 1) {
