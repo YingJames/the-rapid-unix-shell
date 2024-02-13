@@ -7,17 +7,17 @@
 #include <fcntl.h>
 #include <ctype.h>
 
-#include "include/utils.h"
-#include "include/clean_string.h"
-#include "include/builtin_commands.h"
-#include "include/exec_command.h"
+#include "utils.h"
+#include "clean_string.h"
+#include "builtin_commands.h"
+#include "exec_command.h"
 
 
 int runShell();
 int handleCmds(char **cmdLines, char **pathv);
 
 
-int main(int argc, char **argv) {
+int main(int argc) {
     if (argc > 1) {
         handleError();
         exit(1);
@@ -39,6 +39,12 @@ int hasWhiteSpace(char *str) {
     return 0;
 }
 
+void clearStrArray(char **cmdLines) {
+    for (int i = 0; i < strArrLen(cmdLines); i++) {
+        memset(cmdLines[i], 0, strlen(cmdLines[i]));
+    }
+}
+
 int handleCmds(char **cmdLines, char **pathv) {
     pid_t pid, wpid;
     int status = 0;
@@ -56,7 +62,9 @@ int handleCmds(char **cmdLines, char **pathv) {
     // iterate through all commands
     int isValidCmd = 0;
     for (int i = 0; cmdLines[i] != NULL; i++) {
-
+//        clearStrArray(cmdLines);
+//        clearStrArray(cmdLine);
+//        clearStrArray(argv);
         // split for redirection if necessary
         isValidCmd = splitString(cmdLine, cmdLines[i], ">");
         if (isValidCmd == -1) break;
@@ -73,7 +81,8 @@ int handleCmds(char **cmdLines, char **pathv) {
 
 
         // check for valid output file name
-        isValidCmd = hasWhiteSpace(outputFile);
+        if (outputFile != NULL)
+            isValidCmd = hasWhiteSpace(outputFile);
         if (isValidCmd == -1) break;
 
 
@@ -125,7 +134,6 @@ int runShell() {
     char *lineInput = NULL;
     size_t lineInputSize = 0;
     char cmdDelimiter[] = "&";
-    char argsDelimiter[] = " \t";
 
     // allocate memory for pathv and default path
     char **pathv = calloc(MAX_PATHS, sizeof(char *));
@@ -135,12 +143,18 @@ int runShell() {
     strcpy(pathv[0], "/bin");
     pathv[1] = NULL;
 
+    // allocate memory for command strings
+    char **cmdLines = calloc(MAX_COMMANDS, sizeof(char *));
+    for (int i = 0; i < MAX_COMMANDS; i++) {
+        cmdLines[i] = calloc(MAX_LINE, sizeof(char));
+    }
+
     while (1) {
-        // allocate memory for command strings
-        char **cmdLines = calloc(MAX_COMMANDS, sizeof(char *));
-        for (int i = 0; i < MAX_COMMANDS; i++) {
-            cmdLines[i] = calloc(MAX_LINE, sizeof(char));
-        }
+//        // allocate memory for command strings
+//        char **cmdLines = calloc(MAX_COMMANDS, sizeof(char *));
+//        for (int i = 0; i < MAX_COMMANDS; i++) {
+//            cmdLines[i] = calloc(MAX_LINE, sizeof(char));
+//        }
         int isValidCmd = 0;
 
         printf("rush> ");
@@ -159,25 +173,13 @@ int runShell() {
         // split input into cmdLines for parallel commands
         isValidCmd = splitString(cmdLines, lineInput, cmdDelimiter);
         if (isValidCmd == -1) {
-            for (int i = 0; i < MAX_COMMANDS; i++)
-                free(cmdLines[i]);
-            free(cmdLines);
             continue;
         }
 
-//        int cmdLinesLen = strArrLen(cmdLines);
         isValidCmd = handleCmds(cmdLines, pathv);
         if (isValidCmd == -1) {
-            for (int i = 0; i < MAX_COMMANDS; i++)
-                free(cmdLines[i]);
-            free(cmdLines);
             continue;
         }
-
-        // free memory
-        for (int i = 0; i < MAX_COMMANDS; i++)
-            free(cmdLines[i]);
-        free(cmdLines);
     }
 
     for (int i = 0; i < MAX_PATHS; i++)
