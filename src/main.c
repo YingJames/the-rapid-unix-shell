@@ -73,7 +73,8 @@ int handleCmds(char **cmdLines, char **pathv) {
 
 
         // check for valid output file name
-        isValidCmd = hasWhiteSpace(outputFile);
+        if (outputFile != NULL)
+            isValidCmd = hasWhiteSpace(outputFile);
         if (isValidCmd == -1) break;
 
 
