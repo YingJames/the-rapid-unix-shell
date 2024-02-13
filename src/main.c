@@ -75,6 +75,7 @@ void runShell() {
                 handleError();
                 continue;
             } else {
+                // check for spaces in output file
                 for (int i = 0; outputFile[i]; i++) {
                     if (isspace((unsigned char)outputFile[i])) {
                         handleError();
@@ -182,5 +183,6 @@ void splitForRedirection(char *input, char *outputFile) {
         }
         i++;
     }
+
     free(tempInput);
 }
