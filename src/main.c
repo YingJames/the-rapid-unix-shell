@@ -26,6 +26,17 @@ int main(int argc) {
     return 0;
 }
 
+void runBuiltinCmds(int argc, char **cmdArgs, char **pathv) {
+    if (argc != 1 && strcmp(cmdArgs[0], "exit") == 0) {
+        handleError();
+    } else if (strcmp(cmdArgs[0], "exit") == 0) {
+        exit(0);
+    } else if (strcmp(cmdArgs[0], "path") == 0) {
+        pathCmd(pathv, argc, cmdArgs);
+    } else if (strcmp(cmdArgs[0], "cd") == 0) {
+        cdCmd(argc, cmdArgs);
+    }
+}
 void runShell() {
     pid_t wpid;
     int status = 0;
@@ -69,9 +80,30 @@ void runShell() {
             cmdCount++;
         }
         pid_t pids[cmdCount];
+        int i = 0;
 
-        for (size_t i = 0; cmdStrings[i] != NULL; i++) {
+        // check for multiple commands
+        int isParallelParent = 0;
+        if (cmdCount > 1) {
+            for (i = 0; i < cmdCount; i++) {
+                pids[i] = fork();
+                // if child process break loop
+                if (pids[i] == 0) break;
+            }
+            if (pids[i] != 0) {
+                isParallelParent = 1;
+                while ((wpid = wait(&status)) > 0);
+            }
+        }
+        if (pids[i] == -1){
+            handleError();
+        }
+
+
+
+//        for (size_t i = 0; cmdStrings[i] != NULL; i++) {
             // check for redirection
+        if (isParallelParent != 1) {
             size_t redirectCount = 0;
             char *outputFile = calloc(MAX_LINE, sizeof(char));
             redirectCount = getStrFreq(cmdStrings[i], ">");
@@ -111,21 +143,26 @@ void runShell() {
                     break;
                 }
             }
-            if (argc != 1 && strcmp(cmdArgs[0], "exit") == 0) {
-                handleError();
-            } else if (strcmp(cmdArgs[0], "exit") == 0) {
-                exit(0);
-            } else if (strcmp(cmdArgs[0], "") == 0) {
-                continue;
-            } else if (strcmp(cmdArgs[0], "path") == 0) {
-                pathCmd(pathv, argc, cmdArgs);
-            } else if (strcmp(cmdArgs[0], "cd") == 0) {
-                cdCmd(argc, cmdArgs);
-            } else {
-                pid_t pid = fork();
-                if (pid < 0) {
+            // if
+            int isBuiltin = -1;
+            if (pids[i] != 0) {
+                if (argc != 1 && strcmp(cmdArgs[0], "exit") == 0) {
                     handleError();
-                } else if (pid == 0) {
+                } else if (strcmp(cmdArgs[0], "exit") == 0) {
+                    exit(0);
+                } else if (strcmp(cmdArgs[0], "path") == 0) {
+                    isBuiltin = 1;
+                    pathCmd(pathv, argc, cmdArgs);
+                } else if (strcmp(cmdArgs[0], "cd") == 0) {
+                    isBuiltin = 1;
+                    cdCmd(argc, cmdArgs);
+                }
+            }
+            if (isBuiltin == -1) {
+                if (cmdCount == 1) pids[i] = fork();
+                if (pids[i] < 0) {
+                    handleError();
+                } else if (pids[i] == 0) {
                     // child process
                     if (strlen(outputFile) > 0) {
                         close(STDOUT_FILENO);
