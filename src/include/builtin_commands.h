@@ -2,17 +2,6 @@
 #define __UTILS_H__
 
 /**
- * @brief Exits the shell.
- *
- * This function is responsible for exiting the shell.
- * It exits the shell if there is only one argument.
- * Otherwise, it prints an error message.
- *
- * @param argc Number of arguments.
- */
-void exitCmd(size_t argc);
-
-/**
  * @brief Sets the path for the shell.
  *
  * This function is responsible for setting the path for the shell.

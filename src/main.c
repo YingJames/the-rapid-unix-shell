@@ -5,23 +5,17 @@ TODO: fix exit with args producing 2x errors, error handling, whitespace (perhap
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <sys/types.h>
+//#include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <sys/stat.h>
+//#include <sys/stat.h>
 
 #include "include/utils.h"
 #include "include/builtin_commands.h"
 #include "include/exec_command.h"
 
-void runShell();
-
-void cleanUserInput(char *userInput);
-
-int splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]);
-
-int splitForRedirection(char *input, char *outputFile);
+void runShell(void);
 
 int main(int argc) {
     if (argc > 1) {
@@ -32,19 +26,7 @@ int main(int argc) {
     return 0;
 }
 
-void runBuiltinCmds(int argc, char **cmdArgs, char **pathv) {
-    if (argc != 1 && strcmp(cmdArgs[0], "exit") == 0) {
-        handleError();
-    } else if (strcmp(cmdArgs[0], "exit") == 0) {
-        exit(0);
-    } else if (strcmp(cmdArgs[0], "path") == 0) {
-        pathCmd(pathv, argc, cmdArgs);
-    } else if (strcmp(cmdArgs[0], "cd") == 0) {
-        cdCmd(argc, cmdArgs);
-    }
-}
-
-void runShell() {
+void runShell(void) {
     pid_t wpid;
     int status = 0;
     char *userInput = NULL;
@@ -199,57 +181,4 @@ void runShell() {
             free(outputFile);
         }
     }
-}
-
-void cleanUserInput(char *userInput) {
-    // replace trailing newline with null
-    userInput[strcspn(userInput, "\n")] = '\0';
-    trim(userInput);
-}
-
-// arrayOfStr is modified
-int splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]) {
-    char *token, *tempInput, *str;
-    tempInput = str = strdup(userInput);
-
-    size_t i = 0;
-    while ((token = strsep(&str, delimiter)) != NULL) {
-        trim(token);
-        if (strlen(token) == 0) {
-            return -1;
-        }
-        arrayOfStr[i] = realloc(arrayOfStr[i], (strlen(token) + 1) * sizeof(char));
-
-        strcpy(arrayOfStr[i], token);
-        // free(token);
-        i++;
-    }
-    arrayOfStr[i] = NULL;
-    free(tempInput);
-    return 0;
-}
-
-int splitForRedirection(char *input, char *outputFile) {
-    char *token, *tempInput, *str;
-    tempInput = str = strdup(input);
-
-    size_t i = 0;
-    while ((token = strsep(&str, ">")) != NULL) {
-        trim(token);
-        if (strlen(token) == 0) {
-            return -1;
-        }
-
-        if (i == 0) {
-            strcpy(input, token);
-            strcat(input, "\0");
-        } else if (i == 1) {
-            strcpy(outputFile, token);
-            strcat(outputFile, "\0");
-        }
-        i++;
-    }
-
-    free(tempInput);
-    return 0;
 }

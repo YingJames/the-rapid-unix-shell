@@ -1,6 +1,6 @@
 CC = gcc
 OPT = -O0
-CFLAGS = -Wall -Wextra -g $(OPT)
+CFLAGS = -Wall -Wextra -pedantic -g $(OPT)
 
 TARGET = rush
 SRCS = main.c utils.c builtin_commands.c exec_command.c
