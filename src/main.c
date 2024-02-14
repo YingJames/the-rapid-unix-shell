@@ -16,8 +16,11 @@ TODO: fix exit with args producing 2x errors, error handling, whitespace (perhap
 #include "include/exec_command.h"
 
 void runShell();
+
 void cleanUserInput(char *userInput);
+
 int splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]);
+
 int splitForRedirection(char *input, char *outputFile);
 
 int main(int argc) {
@@ -25,7 +28,7 @@ int main(int argc) {
         handleError();
         exit(1);
     }
-        runShell();
+    runShell();
     return 0;
 }
 
@@ -40,6 +43,7 @@ void runBuiltinCmds(int argc, char **cmdArgs, char **pathv) {
         cdCmd(argc, cmdArgs);
     }
 }
+
 void runShell() {
     pid_t wpid;
     int status = 0;
@@ -49,13 +53,13 @@ void runShell() {
     char argsDelimiter[] = " \t";
 
     // allocate memory for command strings
-    char **cmdStrings = malloc(MAX_COMMANDS * sizeof(char*));
+    char **cmdStrings = malloc(MAX_COMMANDS * sizeof(char *));
     for (size_t i = 0; i < MAX_COMMANDS; i++) {
         cmdStrings[i] = calloc(MAX_LINE, sizeof(char));
     }
 
     // allocate memory for pathv and default path
-    char **pathv = calloc(MAX_PATHS, sizeof(char*));
+    char **pathv = calloc(MAX_PATHS, sizeof(char *));
     for (size_t i = 0; i < MAX_PATHS; i++) {
         pathv[i] = calloc(MAX_LINE, sizeof(char));
     }
@@ -106,14 +110,10 @@ void runShell() {
                 while ((wpid = wait(&status)) > 0);
             }
         }
-        if (pids[i] == -1){
+        if (pids[i] == -1) {
             handleError();
         }
 
-
-
-//        for (size_t i = 0; cmdStrings[i] != NULL; i++) {
-            // check for redirection
         if (isParallelParent != 1) {
             size_t redirectCount = 0;
             char *outputFile = calloc(MAX_LINE, sizeof(char));
@@ -130,7 +130,7 @@ void runShell() {
             } else {
                 // check for spaces in output file
                 for (int i = 0; outputFile[i]; i++) {
-                    if (isspace((unsigned char)outputFile[i])) {
+                    if (isspace((unsigned char) outputFile[i])) {
                         handleError();
                         break;
                     }
@@ -138,7 +138,7 @@ void runShell() {
             }
 
             // allocate mem for cmdArgs
-            char **cmdArgs = malloc(MAX_ARGS * sizeof(char*));
+            char **cmdArgs = malloc(MAX_ARGS * sizeof(char *));
             for (size_t i = 0; i < MAX_ARGS; i++) {
                 cmdArgs[i] = calloc(MAX_LINE, sizeof(char));
             }
@@ -154,7 +154,8 @@ void runShell() {
                     break;
                 }
             }
-            // if
+
+
             int isBuiltin = -1;
             if (pids[i] != 0) {
                 if (argc != 1 && strcmp(cmdArgs[0], "exit") == 0) {
@@ -170,19 +171,25 @@ void runShell() {
                     cdCmd(argc, cmdArgs);
                 }
             }
+
+            // if not a builtin command
             if (isBuiltin == -1) {
+                // if not parallel, then fork
                 if (cmdCount == 1) pids[i] = fork();
+
+                // if fork fails
                 if (pids[i] < 0) {
                     handleError();
                 } else if (pids[i] == 0) {
                     // child process
+                    // redirect output to file
                     if (strlen(outputFile) > 0) {
                         close(STDOUT_FILENO);
                         open(outputFile, O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
                     }
                     execCommand(pathv, cmdArgs);
                 } else {
-                    // parent process
+                    // parent process wait for all children
                     while ((wpid = wait(&status)) > 0);
                 }
                 for (size_t i = 0; i < MAX_ARGS; i++) {
@@ -192,16 +199,9 @@ void runShell() {
             free(outputFile);
         }
     }
-
-    for (size_t i = 0; i < MAX_COMMANDS; i++) {
-        free(cmdStrings[i]);
-    }
-    for (size_t i = 0; i < MAX_PATHS; i++) {
-        free(pathv[i]);
-    }
 }
 
-void cleanUserInput( char *userInput) {
+void cleanUserInput(char *userInput) {
     // replace trailing newline with null
     userInput[strcspn(userInput, "\n")] = '\0';
     trim(userInput);
