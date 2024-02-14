@@ -17,7 +17,7 @@ TODO: fix exit with args producing 2x errors, error handling, whitespace (perhap
 
 void runShell();
 void cleanUserInput(char *userInput);
-void splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]);
+int splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]);
 int splitForRedirection(char *input, char *outputFile);
 
 int main(int argc) {
@@ -75,11 +75,19 @@ void runShell() {
         cleanUserInput(userInput);
         if (strlen(userInput) == 0) {
             continue;
+        } else if (userInputSize > MAX_LINE) {
+            handleError();
+            continue;
         }
-        splitWithDelimiter(userInput, cmdStrings, cmdDelimiter);
 
-        size_t cmdCount = 0;
-        for (size_t i = 0; cmdStrings[i] != NULL; i++) {
+        isValid = splitWithDelimiter(userInput, cmdStrings, cmdDelimiter);
+        if (isValid == -1) {
+            handleError();
+            continue;
+        }
+
+        int cmdCount = 0;
+        for (int i = 0; cmdStrings[i] != NULL; i++) {
             cmdCount++;
         }
         pid_t pids[cmdCount];
@@ -200,7 +208,7 @@ void cleanUserInput( char *userInput) {
 }
 
 // arrayOfStr is modified
-void splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]) {
+int splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]) {
     char *token, *tempInput, *str;
     tempInput = str = strdup(userInput);
 
@@ -208,7 +216,7 @@ void splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]) {
     while ((token = strsep(&str, delimiter)) != NULL) {
         trim(token);
         if (strlen(token) == 0) {
-            continue;
+            return -1;
         }
         arrayOfStr[i] = realloc(arrayOfStr[i], (strlen(token) + 1) * sizeof(char));
 
@@ -218,6 +226,7 @@ void splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]) {
     }
     arrayOfStr[i] = NULL;
     free(tempInput);
+    return 0;
 }
 
 int splitForRedirection(char *input, char *outputFile) {
