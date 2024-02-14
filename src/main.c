@@ -1,3 +1,6 @@
+/*===========================
+TODO: fix exit with args producing 2x errors, error handling, whitespace (perhaps look at overflow with MAX_LINE)
+===========================*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
