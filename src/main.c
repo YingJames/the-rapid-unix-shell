@@ -150,6 +150,7 @@ void runShell() {
             int isBuiltin = -1;
             if (pids[i] != 0) {
                 if (argc != 1 && strcmp(cmdArgs[0], "exit") == 0) {
+                    isBuiltin = 1;
                     handleError();
                 } else if (strcmp(cmdArgs[0], "exit") == 0) {
                     exit(0);
