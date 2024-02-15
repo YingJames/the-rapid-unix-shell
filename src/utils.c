@@ -19,6 +19,8 @@ void handleError(void) {
 size_t getStrFreq(char *input, char *targetStr) {
     int count = 0;
     char *tmp = input;
+
+    // count the number of occurrences of targetStr in input
     while ((tmp = strstr(tmp, targetStr)) != NULL) {
         count++;
         tmp++;
@@ -30,10 +32,12 @@ void ltrim(char *str) {
     size_t len = strlen(str);
     size_t i = 0;
 
+    // remove leading whitespace
     while (str[i] == ' ' || str[i] == '\t') {
         i++;
     }
 
+    // shift the string to the left
     if (i > 0) {
         size_t j = 0;
         while (i < len) {
@@ -43,26 +47,28 @@ void ltrim(char *str) {
     }
 }
 
-void rtrim(char *s) {
-    size_t len = strlen(s);
-    while (len > 0 && (s[len - 1] == ' ' || s[len - 1] == '\t')) {
+void rtrim(char *str) {
+    size_t len = strlen(str);
+
+    // remove trailing whitespace
+    while (len > 0 && (str[len - 1] == ' ' || str[len - 1] == '\t')) {
         len--;
     }
-    s[len] = '\0';
+    str[len] = '\0';
 }
 
-void trim(char *s) {
-    ltrim(s);
-    rtrim(s);
+void trim(char *str) {
+    ltrim(str);
+    rtrim(str);
 }
 
-// arrayOfStr is modified
-int splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]) {
+int splitParallelCmds(char *userInput, char **arrayOfStr) {
     char *token, *tempInput, *str;
     tempInput = str = strdup(userInput);
 
+    // split the string with parallel command delimiter
     size_t i = 0;
-    while ((token = strsep(&str, delimiter)) != NULL) {
+    while ((token = strsep(&str, "&")) != NULL) {
         trim(token);
         if (strlen(token) == 0) {
             return -1;
@@ -72,7 +78,6 @@ int splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]) {
         strcpy(arrayOfStr[i], token);
         strcat(arrayOfStr[i], "\0");
         trim(arrayOfStr[i]);
-        // free(token);
         i++;
     }
     arrayOfStr[i] = NULL;
@@ -80,13 +85,39 @@ int splitWithDelimiter(char *userInput, char **arrayOfStr, char delimiter[]) {
     return 0;
 }
 
-int splitForRedirection(char *input, char *outputFile) {
+// skip empty tokens
+int splitCmdArgs(char *userInput, char **arrayOfStr) {
+    char *token, *tempInput, *str;
+    tempInput = str = strdup(userInput);
+
+    size_t i = 0;
+    while ((token = strsep(&str, " \t")) != NULL) {
+        trim(token);
+
+        if (strlen(token) == 0) {
+            continue;
+        }
+        arrayOfStr[i] = realloc(arrayOfStr[i], (strlen(token) + 1) * sizeof(char));
+
+        strcpy(arrayOfStr[i], token);
+        strcat(arrayOfStr[i], "\0");
+        trim(arrayOfStr[i]);
+        i++;
+    }
+    arrayOfStr[i] = NULL;
+    free(tempInput);
+    return 0;
+}
+
+// invalid if there are empty tokens
+int splitRedirection(char *input, char *outputFile) {
     char *token, *tempInput, *str;
     tempInput = str = strdup(input);
 
     size_t i = 0;
     while ((token = strsep(&str, ">")) != NULL) {
         trim(token);
+
         if (strlen(token) == 0) {
             return -1;
         }

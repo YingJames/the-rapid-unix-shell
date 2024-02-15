@@ -1,15 +1,10 @@
-/*===========================
-TODO: fix exit with args producing 2x errors, error handling, whitespace (perhaps look at overflow with MAX_LINE)
-===========================*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-//#include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <fcntl.h>
-//#include <sys/stat.h>
 
 #include "include/utils.h"
 #include "include/builtin_commands.h"
@@ -31,8 +26,6 @@ void runShell(void) {
     int status = 0;
     char *userInput = NULL;
     size_t userInputSize = 0;
-    char cmdDelimiter[] = "&";
-    char argsDelimiter[] = " \t";
 
     // allocate memory for command strings
     char **cmdStrings = malloc(MAX_COMMANDS * sizeof(char *));
@@ -48,59 +41,73 @@ void runShell(void) {
     pathv[0] = malloc((strlen("/bin") + 1) * sizeof(char));
     strcpy(pathv[0], "/bin");
 
+    // main loop
     while (1) {
         printf("rush> ");
         fflush(stdout);
 
+        // handle user input
         int isValid = getline(&userInput, &userInputSize, stdin);
         if (isValid == -1) {
             handleError();
             continue;
         }
-
+        // remove newline and whitespace
         cleanUserInput(userInput);
+
+        // check for empty input
         if (strlen(userInput) == 0) {
             continue;
+            // check for too long input
         } else if (userInputSize > MAX_LINE) {
             handleError();
             continue;
         }
 
-        isValid = splitWithDelimiter(userInput, cmdStrings, cmdDelimiter);
+        // split parallel commands if any
+        isValid = splitParallelCmds(userInput, cmdStrings);
         if (isValid == -1) {
             handleError();
             continue;
         }
 
+        // get the number of commands
         int cmdCount = 0;
         for (int i = 0; cmdStrings[i] != NULL; i++) {
             cmdCount++;
         }
-        pid_t pids[cmdCount];
-        int i = 0;
 
-        // check for multiple commands
+        // fork for parallel commands
+        int cmdIndex = 0;
+        pid_t pids[cmdCount];
         int isParallelParent = 0;
         if (cmdCount > 1) {
-            for (i = 0; i < cmdCount; i++) {
-                pids[i] = fork();
+            // if parent process, fork for each command
+            for (cmdIndex = 0; cmdIndex < cmdCount; cmdIndex++) {
+                pids[cmdIndex] = fork();
                 // if child process break loop
-                if (pids[i] == 0) break;
+                if (pids[cmdIndex] == 0) break;
             }
-            if (pids[i] != 0) {
+
+            // if parent process, wait for all children
+            if (pids[cmdIndex] != 0) {
                 isParallelParent = 1;
                 while ((wpid = wait(&status)) > 0);
             }
         }
-        if (pids[i] == -1) {
+        // if fork fails handle error
+        if (pids[cmdIndex] == -1) {
             handleError();
         }
 
         if (isParallelParent != 1) {
+
+            // handle redirection
             size_t redirectCount = 0;
             char *outputFile = calloc(MAX_LINE, sizeof(char));
-            redirectCount = getStrFreq(cmdStrings[i], ">");
-            int isValidCmd = splitForRedirection(cmdStrings[i], outputFile);
+            redirectCount = getStrFreq(cmdStrings[cmdIndex], ">");
+            int isValidCmd = splitRedirection(cmdStrings[cmdIndex], outputFile);
+
             if (isValidCmd == -1) {
                 // check for empty or invalid redirection
                 handleError();
@@ -119,16 +126,16 @@ void runShell(void) {
                 }
             }
 
-            // allocate mem for cmdArgs
+            // allocate memory for command args
             char **cmdArgs = malloc(MAX_ARGS * sizeof(char *));
             for (size_t i = 0; i < MAX_ARGS; i++) {
                 cmdArgs[i] = calloc(MAX_LINE, sizeof(char));
             }
 
             // get the cmd args array
-            splitWithDelimiter(cmdStrings[i], cmdArgs, argsDelimiter);
+            splitCmdArgs(cmdStrings[cmdIndex], cmdArgs);
 
-            // get argc value
+            // get args count
             size_t argc = 0;
             for (size_t i = 0; i < MAX_ARGS; i++) {
                 if (cmdArgs[i] == NULL) {
@@ -137,9 +144,9 @@ void runShell(void) {
                 }
             }
 
-
+            // check for builtin commands
             int isBuiltin = -1;
-            if (pids[i] != 0) {
+            if (pids[cmdIndex] != 0) {
                 if (argc != 1 && strcmp(cmdArgs[0], "exit") == 0) {
                     isBuiltin = 1;
                     handleError();
@@ -157,13 +164,15 @@ void runShell(void) {
             // if not a builtin command
             if (isBuiltin == -1) {
                 // if not parallel, then fork
-                if (cmdCount == 1) pids[i] = fork();
+                if (cmdCount == 1)
+                    pids[cmdIndex] = fork();
 
                 // if fork fails
-                if (pids[i] < 0) {
+                if (pids[cmdIndex] < 0)
                     handleError();
-                } else if (pids[i] == 0) {
-                    // child process
+
+                // child process
+                else if (pids[cmdIndex] == 0) {
                     // redirect output to file
                     if (strlen(outputFile) > 0) {
                         close(STDOUT_FILENO);
@@ -174,6 +183,8 @@ void runShell(void) {
                     // parent process wait for all children
                     while ((wpid = wait(&status)) > 0);
                 }
+
+                // free memory
                 for (size_t i = 0; i < MAX_ARGS; i++) {
                     free(cmdArgs[i]);
                 }
