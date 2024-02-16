@@ -1,5 +1,9 @@
 # Miscellaneous
+src/.vscode
+src/.idea
 /.vscode
+/.idea
+/.github
 rush.zip
 
 # Prerequisites
