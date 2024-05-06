@@ -13,6 +13,34 @@ RUSH is a custom Unix shell implementation designed for a Unix-based system. Thi
 - Command parsing and execution from the system path
 - Handling of command execution errors
 
+### Redirection
+
+The shell supports redirection of standard output to a file using the `>` character. This allows users to send the output of a program to a file instead of the screen. 
+This command will redirect the output of `ls -la /tmp` to a file named `output`. If the file already exists, it will be overwritten. If the file cannot be opened, an error will be reported.
+
+**Note:** Redirection is supported for external commands only. Redirection for built-in commands (e.g., `path /bin > file`) is not implemented.
+
+### Parallel Commands
+
+The shell allows users to execute commands in parallel using the `&` operator. This feature enables multiple commands to run simultaneously without waiting for each to finish before starting the next.
+
+**Usage:**
+```bash
+cmd1 & cmd2 [args1 args2] & cmd3 [args1]
+```
+
+In this example, `cmd1`, `cmd2`, and `cmd3` will be executed in parallel. The shell will start all specified processes and then use `wait()` or `waitpid` to wait for all of them to complete before returning control to the user.
+
+**Note:** After initiating all processes, the shell ensures that all are completed before accepting new user commands.
+
+### Combining Redirection and Parallel Commands:
+
+You can combine these features to redirect the output of parallel commands into separate files. This is particularly useful for running multiple commands at once and saving their outputs for later review.
+
+**Usage:**
+```bash
+command1 > output1 & command2 > output2 & command3 > output3
+```
 
 ## Getting Started
 
